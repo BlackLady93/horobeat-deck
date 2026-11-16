@@ -116,6 +116,42 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#000e;border:1px solid var(--accent);padding:8px 16px;border-radius:8px;opacity:0;transition:.2s;pointer-events:none;z-index:60}
 .toast.show{opacity:1}
 .mbar,.ftoggle{display:none}
+/* ---- モード切替 ---- */
+.tabs{display:flex;gap:4px;margin-left:12px}
+.tabs button{background:none;border:1px solid transparent;border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--muted)}
+.tabs button.on{border-color:var(--accent);color:var(--accent)}
+body.m-home .app, body.m-home .mbar{display:none !important}
+body:not(.m-home) #home{display:none}
+body:not(.m-build) .build-only{display:none !important}
+body:not(.m-coll) .coll-only{display:none !important}
+body:not(.m-build) header .note{display:none}
+body.m-coll .right{display:none}
+body.m-coll .app{grid-template-columns:1fr}
+/* ---- ホーム（デッキ一覧） ---- */
+#home{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+#home .hbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+#home h2{margin:0;font-size:20px;flex:1}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.htile{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
+.htile:hover{border-color:var(--accent)}
+.htile .th{display:flex;height:110px;background:var(--panel2);overflow:hidden}
+.htile .th img{flex:1;min-width:0;object-fit:cover;object-position:center 22%}
+.htile .bd{padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.htile .nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htile .mt{color:var(--muted);font-size:12px;display:flex;gap:8px;align-items:center;white-space:nowrap;flex-wrap:wrap}
+.htile .mt .ok{color:var(--ok)} .htile .mt .ng{color:var(--danger)}
+.htile .ac{display:flex;gap:6px;padding:0 12px 10px}
+.htile .ac .btn{padding:3px 10px;font-size:12px}
+.hempty{display:flex;justify-content:center;padding:80px 0}
+.hempty .btn{font-size:18px;padding:12px 32px}
+/* ---- 所持登録 ---- */
+body.m-coll .card .qty{background:var(--ok);color:#0d1a0c}
+body.m-coll .card.none img{opacity:.45}
+body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
+/* ---- 未所持を赤く ---- */
+.vt.miss::after{content:"";position:absolute;inset:0;background:rgba(230,50,50,.42);border-radius:6px;pointer-events:none}
+.vt.miss .vq{background:#e0584c;color:#fff}
+.btn.on{border-color:#e0584c;color:#ffb3aa}
 .card img,.drow img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .card,.drow,.btn,.chip,.qbox button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @media (hover:none){.card .info{opacity:1}.card:hover{transform:none}}
@@ -124,6 +160,10 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
   header{padding:8px 12px;gap:8px}
   header h1{font-size:16px}
   header .note{display:none}
+  .tabs{margin-left:auto}
+  .tabs button{padding:4px 8px;font-size:13px}
+  .hgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .htile .th{height:80px}
   .app{display:block;height:auto}
   .left{border-right:none;padding-bottom:64px;overflow-x:hidden}
   .ftoggle{display:flex;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
@@ -158,6 +198,7 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
   .vgrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
   .vgrid.grp{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
   .vq{font-size:13px;padding:1px 7px;right:3px;bottom:3px}
+  .vt.miss .vq{font-size:10px;padding:1px 5px;white-space:nowrap}
   .vhead{flex-wrap:wrap}
   .hand img{width:calc(33% - 6px)}
   textarea{height:45vh}
@@ -167,8 +208,16 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
 <body>
 <header>
   <h1>ホロビート <span>デッキ構築</span></h1>
+  <nav class="tabs">
+    <button data-go="home" id="tHome">デッキ一覧</button>
+    <button data-go="coll" id="tColl">所持カード登録</button>
+  </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
 </header>
+<section id="home">
+  <div class="hbar"><h2>デッキ一覧</h2><button class="btn pri" id="hNew">＋ 新規</button></div>
+  <div id="homeList"></div>
+</section>
 <div class="app">
   <section class="left">
     <div class="ftoggle">
@@ -190,7 +239,10 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
     </div>
     <div class="resbar">
       <span id="rescount"></span>
-      <label><input type="checkbox" id="grpName" checked> 同名カードをまとめる</label>
+      <label class="build-only"><input type="checkbox" id="grpName" checked> 同名カードをまとめる</label>
+      <label class="coll-only"><input type="checkbox" id="lack"> 4枚未満のカードだけ</label>
+      <span class="coll-only" id="ownSum"></span>
+      <button class="btn coll-only" id="bCollIO">書き出し/読込</button>
       <span class="sp">並び順
         <select id="sort">
           <option value="no">カード番号</option>
@@ -206,13 +258,11 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
   <aside class="right">
     <div class="dhead">
       <div class="row">
-        <input class="dname" id="dname" value="新しいデッキ">
+        <input class="dname" id="dname" value="新しいデッキ" title="デッキ名（変更は自動保存）">
         <div class="count" id="count">0/50</div>
       </div>
       <div class="row" style="flex-wrap:wrap">
-        <button class="btn pri" id="bSave">保存</button>
-        <button class="btn" id="bLoad">デッキ一覧</button>
-        <button class="btn" id="bNew">新規</button>
+        <button class="btn" id="bBack">← 一覧へ</button>
         <button class="btn" id="bView">デッキ画像</button>
         <button class="btn" id="bDraw">試しに引く</button>
         <button class="btn" id="bExport">書き出し/読込</button>
@@ -235,8 +285,8 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
 
 <div class="mbar">
   <div class="count" id="mcount">0/50</div>
-  <div class="hint">タップ：追加<br>長押し：1枚削除</div>
-  <button class="btn pri" id="mdeck">デッキを見る</button>
+  <div class="hint" id="mhint">タップ：追加<br>長押し：1枚削除</div>
+  <button class="btn pri build-only" id="mdeck">デッキを見る</button>
 </div>
 <div class="modal" id="modal"><div class="mbox"><button class="x" id="mx">×</button><div id="mbody"></div></div></div>
 <div class="toast" id="toast"></div>
@@ -251,7 +301,7 @@ const COLORS = ["赤","緑","青"];
 const COLOR_HEX = {赤:"var(--red)",緑:"var(--green)",青:"var(--blue)"};
 const RARS = ["C","UC","R","SR","DR","SEC"];
 const ORDER = Object.fromEntries(CARDS.map((c,i)=>[c.id,i]));
-const LS_KEY = "horobeat_decks_v1", LS_CUR = "horobeat_current_v1";
+const LS_KEY = "horobeat_decks_v1", LS_CUR = "horobeat_current_v1", LS_OWN = "horobeat_owned_v1";
 const $ = s => document.querySelector(s);
 
 /* ---------- 画像：ローカル img/ があれば優先、なければ公式URL ---------- */
@@ -272,6 +322,15 @@ let deckName = "新しいデッキ";
 let editingKey = null;       // 保存済みデッキのキー
 const filt = {q:"",colors:new Set(),types:new Set(),rars:new Set(),cmin:"",cmax:"",set:"",tribe:"",kw:"",trig:"",boost:""};
 
+let mode = "home";           // home / build / coll
+let owned = {};              // id -> 所持枚数
+try { owned = Object.fromEntries(Object.entries(JSON.parse(localStorage.getItem(LS_OWN)) || {}).filter(([k,v])=>BY_ID[k] && v>0)); } catch {}
+const ownedName = name => CARDS.reduce((s,c) => s + (c.name===name ? (owned[c.id]||0) : 0), 0);
+function saveOwned(){ try { localStorage.setItem(LS_OWN, JSON.stringify(owned)); } catch { toast("保存できませんでした"); } }
+function ownAdd(id){ owned[id] = Math.min(99, (owned[id]||0) + 1); ownChanged(); }
+function ownRem(id){ if (!owned[id]) return; if (--owned[id] <= 0) delete owned[id]; ownChanged(); }
+function ownChanged(){ saveOwned(); if ($("#lack").checked) renderGrid(); else renderGridBadges(); }
+
 const sameNameCount = name => Object.entries(deck).reduce((s,[id,n]) => s + (BY_ID[id].name===name?n:0), 0);
 const total = () => Object.values(deck).reduce((a,b)=>a+b,0);
 
@@ -289,7 +348,63 @@ function remove(id){
   }
   if (--deck[id] <= 0) delete deck[id]; changed();
 }
-function changed(){ renderDeck(); renderGridBadges(); persistCurrent(); }
+function changed(){ renderDeck(); renderGridBadges(); autoSave(); }
+// 自動保存：1枚でも入れたら一覧に保存される
+function autoSave(){
+  if (!editingKey && total() === 0) return;
+  const all = loadAll();
+  if (!editingKey) editingKey = "d" + Date.now();
+  all[editingKey] = { name: deckName || "無題", deck: {...deck}, updated: new Date().toISOString() };
+  saveAll(all);
+}
+
+/* ---------- 画面切替 ---------- */
+function setMode(m){
+  mode = m;
+  document.body.className = "m-" + m;
+  $("#tHome").classList.toggle("on", m==="home");
+  $("#tColl").classList.toggle("on", m==="coll");
+  $(".right").classList.remove("open"); $("#mdeck").textContent = "デッキを見る";
+  $("#mhint").innerHTML = m==="coll" ? "タップ：所持+1<br>長押し：所持−1" : "タップ：追加<br>長押し：1枚削除";
+  closeModal();
+  if (m==="home") renderHome();
+  else { renderGrid(); renderDeck(); }
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => setMode(b.dataset.go));
+function openDeck(key){
+  const all = loadAll();
+  if (key && all[key]) { deck = Object.fromEntries(Object.entries(all[key].deck).filter(([k])=>BY_ID[k])); deckName = all[key].name; editingKey = key; }
+  else { deck = {}; deckName = "新しいデッキ"; editingKey = null; }
+  setMode("build");
+}
+$("#hNew").onclick = () => openDeck(null);
+$("#bBack").onclick = () => setMode("home");
+function renderHome(){
+  const all = loadAll();
+  const items = Object.entries(all).sort((a,b)=>b[1].updated.localeCompare(a[1].updated));
+  $("#hNew").style.display = items.length ? "" : "none";
+  const el = $("#homeList");
+  if (!items.length){
+    el.innerHTML = `<div class="hempty"><button class="btn pri" id="hNew2">＋ 新規デッキを作る</button></div>`;
+    $("#hNew2").onclick = () => openDeck(null);
+    return;
+  }
+  el.innerHTML = `<div class="hgrid">${items.map(([k,d])=>{
+    const ents = Object.entries(d.deck).filter(([id])=>BY_ID[id]).map(([id,n])=>({c:BY_ID[id],n}));
+    const n = ents.reduce((s,e)=>s+e.n,0);
+    const thumbs = ents.sort((a,b)=>b.c.cost-a.c.cost||b.n-a.n).slice(0,3).map(e=>`<img src="${imgSrc(e.c)}" alt="">`).join("");
+    const cols = COLORS.filter(col=>ents.some(e=>e.c.color===col)).map(col=>`<i class="dot" style="background:${COLOR_HEX[col]}"></i>`).join("");
+    return `<div class="htile" data-open="${k}">
+      <div class="th">${thumbs}</div>
+      <div class="bd"><div class="nm">${esc(d.name)}</div>
+        <div class="mt">${cols}<span class="${n===DECK_SIZE?"ok":"ng"}">${n}/${DECK_SIZE}枚</span><span>${new Date(d.updated).toLocaleDateString("ja-JP")}</span></div></div>
+      <div class="ac"><button class="btn" data-dup="${k}">複製</button><button class="btn dng" data-del="${k}">削除</button></div>
+    </div>`;}).join("")}</div>`;
+  el.querySelectorAll("[data-open]").forEach(t => t.onclick = e => { if (e.target.closest("button")) return; openDeck(t.dataset.open); });
+  el.querySelectorAll("[data-dup]").forEach(b => b.onclick = () => { const d=all[b.dataset.dup]; all["d"+Date.now()]={...d,name:d.name+" のコピー",updated:new Date().toISOString()}; saveAll(all); renderHome(); });
+  el.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { if(!confirmInline()) return; delete all[b.dataset.del]; saveAll(all); renderHome(); toast("削除しました"); });
+}
 
 /* ---------- フィルタUI ---------- */
 function chips(container, values, set, cls=""){
@@ -317,7 +432,7 @@ $("#mdeck").onclick = () => {
   $("#mdeck").textContent = open ? "カード一覧へ" : "デッキを見る";
 }; bind("#cmax","cmax");
 bind("#fSet","set","change"); bind("#fTribe","tribe","change"); bind("#fKw","kw","change"); bind("#fTrig","trig","change"); bind("#fBoost","boost","change");
-$("#grpName").onchange = renderGrid; $("#sort").onchange = renderGrid;
+$("#grpName").onchange = renderGrid; $("#sort").onchange = renderGrid; $("#lack").onchange = renderGrid;
 $("#reset").onclick = () => {
   Object.assign(filt,{q:"",cmin:"",cmax:"",set:"",tribe:"",kw:"",trig:"",boost:""});
   ["colors","types","rars"].forEach(k=>filt[k].clear());
@@ -347,7 +462,8 @@ function renderGrid(){
   let list = CARDS.filter(match);
   const variantsOf = {};
   CARDS.forEach(c => (variantsOf[c.name] ||= []).push(c));
-  if ($("#grpName").checked){
+  if (mode==="coll" && $("#lack").checked) list = list.filter(c => ownedName(c.name) < MAX_SAME);
+  if (mode==="build" && $("#grpName").checked){
     const seen = new Set();
     list = list.filter(c => !seen.has(c.name) && seen.add(c.name));
   }
@@ -360,8 +476,9 @@ function renderGrid(){
   }[s];
   list.sort(cmp); shown = list;
   $("#rescount").textContent = `${list.length} 件表示（全${CARDS.length}種）`;
+  if (mode==="coll") renderOwnSum();
   const g = $("#grid"); g.innerHTML = "";
-  const grp = $("#grpName").checked;
+  const grp = mode==="build" && $("#grpName").checked;
   list.forEach(c => {
     const d = document.createElement("div"); d.className="card"; d.dataset.id=c.id; d.dataset.name=c.name;
     const nv = variantsOf[c.name].length;
@@ -372,24 +489,45 @@ function renderGrid(){
     d.onclick = e => {
       if (suppressClick) { suppressClick = false; return; }
       if (e.target.classList.contains("info")) return showDetail(c.id);
-      add(c.id);
+      mode==="coll" ? ownAdd(c.id) : add(c.id);
     };
-    d.oncontextmenu = e => { e.preventDefault(); if (!longFired) remove(c.id); longFired = false; };
+    const rem = () => mode==="coll" ? ownRem(c.id) : remove(c.id);
+    d.oncontextmenu = e => { e.preventDefault(); if (!longFired) rem(); longFired = false; };
     // 長押しで削除（スマホ）
     d.addEventListener("touchstart", e => {
       if (e.target.classList.contains("info")) return;
       longFired = false;
-      pressTimer = setTimeout(() => { longFired = true; suppressClick = true; remove(c.id); navigator.vibrate && navigator.vibrate(20); }, 450);
+      pressTimer = setTimeout(() => { longFired = true; suppressClick = true; rem(); navigator.vibrate && navigator.vibrate(20); }, 450);
     }, {passive:true});
     ["touchend","touchmove","touchcancel"].forEach(ev => d.addEventListener(ev, () => clearTimeout(pressTimer), {passive:true}));
     g.appendChild(d);
   });
   renderGridBadges();
 }
+function renderOwnSum(){
+  const names = [...new Set(CARDS.map(c=>c.name))];
+  const have = names.filter(n=>ownedName(n)>0).length, comp = names.filter(n=>ownedName(n)>=MAX_SAME).length;
+  const cards = Object.values(owned).reduce((a,b)=>a+b,0);
+  $("#ownSum").textContent = `所持 ${have}/${names.length}種 ・ 4枚そろい ${comp}種 ・ 計${cards}枚`;
+  $("#mcount").textContent = `${comp}/${names.length}`; $("#mcount").className = "count";
+}
 function renderGridBadges(){
+  if (mode==="coll"){
+    document.querySelectorAll(".card").forEach(el => {
+      const n = owned[el.dataset.id]||0, nn = ownedName(el.dataset.name);
+      const q = el.querySelector(".qty");
+      q.hidden = !n; q.textContent = "所持" + n;
+      el.classList.remove("max","full");
+      el.classList.toggle("none", nn===0);
+      el.classList.toggle("lack", nn>0 && nn<MAX_SAME);
+    });
+    renderOwnSum();
+    return;
+  }
   const full = total() >= DECK_SIZE;
   const grp = $("#grpName").checked;
   document.querySelectorAll(".card").forEach(el => {
+    el.classList.remove("none","lack");
     const n = grp ? sameNameCount(el.dataset.name) : (deck[el.dataset.id]||0);
     const q = el.querySelector(".qty");
     q.hidden = !n; q.textContent = "×" + n;
@@ -406,6 +544,7 @@ function deckEntries(){
 }
 function renderDeck(){
   const t = total();
+  if (mode!=="build") return;
   [$("#count"), $("#mcount")].forEach(ce => {
     ce.textContent = `${t}/${DECK_SIZE}`;
     ce.className = "count" + (t===DECK_SIZE?" ok":t>DECK_SIZE?" over":"");
@@ -481,57 +620,42 @@ function showDetail(id){
         <dt>トリガー</dt><dd>${c.trigger}</dd>
         <dt>レアリティ</dt><dd>${c.rarity}</dd>
         <dt>収録先</dt><dd>${window.HB_SETS[c.set]}</dd>
-        <dt>デッキ内</dt><dd>${deck[id]||0}枚（同名合計 ${sameNameCount(c.name)}/4）</dd>
+        ${mode==="build"?`<dt>デッキ内</dt><dd>${deck[id]||0}枚（同名合計 ${sameNameCount(c.name)}/4）</dd>`:""}
+        <dt>所持</dt><dd>${owned[id]||0}枚（同名合計 ${ownedName(c.name)}枚）</dd>
       </dl>
       <div class="tx">${c.text || "（能力なし）"}</div>
       <div style="margin-top:12px;display:flex;gap:8px">
-        <button class="btn pri" id="dAdd">このイラストで追加</button>
-        <button class="btn" id="dRem">1枚減らす</button>
+        <button class="btn pri" id="dAdd">${mode==="coll"?"所持 +1":"このイラストで追加"}</button>
+        <button class="btn" id="dRem">${mode==="coll"?"所持 −1":"1枚減らす"}</button>
       </div>
     </div></div>`);
-  $("#dAdd").onclick = () => { add(id); showDetail(id); };
-  $("#dRem").onclick = () => { remove(id); showDetail(id); };
+  $("#dAdd").onclick = () => { mode==="coll" ? ownAdd(id) : add(id); showDetail(id); };
+  $("#dRem").onclick = () => { mode==="coll" ? ownRem(id) : remove(id); showDetail(id); };
   document.querySelectorAll(".vrow img").forEach(im => im.onclick = () => showDetail(im.dataset.id));
 }
 
 /* ---------- 保存・読込 ---------- */
 const loadAll = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; } };
 const saveAll = o => { try { localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch { toast("保存できませんでした"); } };
-function persistCurrent(){ try { localStorage.setItem(LS_CUR, JSON.stringify({deck,deckName,editingKey})); } catch {} }
-function restoreCurrent(){ try { const o = JSON.parse(localStorage.getItem(LS_CUR)); if (o){ deck = Object.fromEntries(Object.entries(o.deck||{}).filter(([k])=>BY_ID[k])); deckName=o.deckName||deckName; editingKey=o.editingKey||null; } } catch {} }
+// 旧バージョンの「作業中デッキ」が未保存なら一覧に移す（1回だけ）
+function migrateCurrent(){
+  try {
+    const o = JSON.parse(localStorage.getItem(LS_CUR)); localStorage.removeItem(LS_CUR);
+    if (!o || !o.deck || !Object.keys(o.deck).length) return;
+    const all = loadAll();
+    if (o.editingKey && all[o.editingKey]) return;
+    all["d"+Date.now()] = { name: (o.deckName||"前回のデッキ"), deck: o.deck, updated: new Date().toISOString() };
+    saveAll(all);
+  } catch {}
+}
 
-$("#dname").oninput = e => { deckName = e.target.value; persistCurrent(); };
-$("#bSave").onclick = () => {
-  const all = loadAll();
-  if (!editingKey) editingKey = "d" + Date.now();
-  all[editingKey] = { name: deckName || "無題", deck: {...deck}, updated: new Date().toISOString() };
-  saveAll(all); persistCurrent();
-  toast(total()===DECK_SIZE ? "保存しました" : `保存しました（現在${total()}枚・50枚ちょうどが必要です）`);
-};
-$("#bNew").onclick = () => {
-  if (total() && !confirmInline()) return;
-  deck = {}; deckName = "新しいデッキ"; editingKey = null; changed();
-};
+$("#dname").oninput = e => { deckName = e.target.value; autoSave(); };
 $("#bClear").onclick = () => { if (!total()) return; if (!confirmInline()) return; deck = {}; changed(); };
 let confirmAt = 0;
 function confirmInline(){ // 2回押しで確定（ダイアログを使わない）
   const now = Date.now();
   if (now - confirmAt < 2500){ confirmAt = 0; return true; }
   confirmAt = now; toast("もう一度押すと確定します"); return false;
-}
-$("#bLoad").onclick = renderSaved;
-function renderSaved(){
-  const all = loadAll();
-  const items = Object.entries(all).sort((a,b)=>b[1].updated.localeCompare(a[1].updated));
-  openModal(`<h2 style="margin-top:0">保存したデッキ</h2>
-    ${items.length ? `<div class="saved">${items.map(([k,d])=>{
-      const n = Object.values(d.deck).reduce((a,b)=>a+b,0);
-      return `<div class="it"><span class="nm">${esc(d.name)}<br><small>${n}枚 ・ ${new Date(d.updated).toLocaleString("ja-JP")}</small></span>
-        <button class="btn pri" data-open="${k}">開く</button><button class="btn" data-dup="${k}">複製</button><button class="btn dng" data-del="${k}">削除</button></div>`;}).join("")}</div>`
-      : `<p class="empty">まだ保存されたデッキはありません</p>`}`);
-  document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ const d=all[b.dataset.open]; deck={...d.deck}; deckName=d.name; editingKey=b.dataset.open; changed(); closeModal(); });
-  document.querySelectorAll("[data-dup]").forEach(b=>b.onclick=()=>{ const d=all[b.dataset.dup]; all["d"+Date.now()]={...d,name:d.name+" のコピー",updated:new Date().toISOString()}; saveAll(all); renderSaved(); });
-  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ if(!confirmInline()) return; delete all[b.dataset.del]; if(editingKey===b.dataset.del) editingKey=null; saveAll(all); renderSaved(); });
 }
 const esc = s => String(s).replace(/[&<>"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 
@@ -565,19 +689,59 @@ $("#bExport").onclick = () => {
   };
 };
 
+/* ---------- 所持カードの書き出し・読込 ---------- */
+$("#bCollIO").onclick = () => {
+  const txt = "# 所持カード\n" + CARDS.filter(c=>owned[c.id]).map(c=>`${owned[c.id]} ${c.name} [${c.id}]`).join("\n");
+  openModal(`<h2 style="margin-top:0">所持カード 書き出し / 読込</h2>
+    <p style="color:var(--muted);font-size:12px">PCとスマホで所持データを移すときに使います。「この内容で上書き」で今の所持データが置き換わります。</p>
+    <textarea id="ta">${esc(txt)}</textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn pri" id="tCopy">コピー</button>
+      <button class="btn" id="tImport">この内容で上書き</button>
+    </div>`);
+  $("#tCopy").onclick = async () => { try { await navigator.clipboard.writeText($("#ta").value); toast("コピーしました"); } catch { $("#ta").select(); toast("選択しました。コピーしてください"); } };
+  $("#tImport").onclick = () => {
+    if (!confirmInline()) return;
+    const no = {}; let miss = 0;
+    $("#ta").value.split(/\r?\n/).forEach(l => {
+      l = l.trim(); if (!l || l.startsWith("#")) return;
+      const m = l.match(/^(\d+)\s*[x×]?\s*(.+?)\s*(?:\[([\w-]+)\])?$/); if (!m) return miss++;
+      let id = m[3] && BY_ID[m[3]] ? m[3] : null;
+      if (!id){ const cs = CARDS.filter(c=>c.name===m[2]); const pick = cs.find(c=>!["DR","SEC"].includes(c.rarity)) || cs[0]; id = pick && pick.id; }
+      if (!id) return miss++;
+      no[id] = (no[id]||0) + +m[1];
+    });
+    owned = no; saveOwned(); closeModal(); renderGrid();
+    toast(miss ? `読み込みました（${miss}行は認識できませんでした）` : "読み込みました");
+  };
+};
+
 /* ---------- デッキ画像 ---------- */
 let viewGrouped = matchMedia("(max-width:900px)").matches; // スマホは最初からまとめ表示
+let viewMiss = false; // 未所持を赤く
 $("#bView").onclick = () => showDeckView();
 function showDeckView(){
   const ents = deckEntries();
+  // 同名ごとの不足枚数＝デッキ内の枚数−所持枚数（後ろのカードから割り当て）
+  const left = {};
+  if (viewMiss) ents.forEach(({c}) => { if (!(c.name in left)) left[c.name] = Math.max(0, sameNameCount(c.name) - ownedName(c.name)); });
+  const missOf = ents.map(() => 0);
+  for (let i = ents.length-1; i >= 0; i--){ const nm = ents[i].c.name; if (left[nm]) { const k = Math.min(ents[i].n, left[nm]); missOf[i] = k; left[nm] -= k; } }
+  const lackTotal = missOf.reduce((a,b)=>a+b,0);
   const tiles = viewGrouped
-    ? ents.map(({c,n}) => `<div class="vt"><img src="${imgSrc(c)}" alt="${c.name}"><span class="vq">×${n}</span></div>`)
-    : ents.flatMap(({c,n}) => Array(n).fill(`<div class="vt"><img src="${imgSrc(c)}" alt="${c.name}"></div>`));
+    ? ents.map(({c,n},i) => `<div class="vt ${missOf[i]?"miss":""}"><img src="${imgSrc(c)}" alt="${c.name}"><span class="vq">×${n}${missOf[i]?`（不足${missOf[i]}）`:""}</span></div>`)
+    : ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => `<div class="vt ${j >= n-missOf[i] ? "miss":""}"><img src="${imgSrc(c)}" alt="${c.name}"></div>`));
   openModal(`<div class="vhead"><h2>${esc(deckName)} <small>${total()}枚${viewGrouped?` ・ ${ents.length}種類`:""}</small></h2>
+      <button class="btn ${viewMiss?"on":""}" id="vMiss">${viewMiss?`未所持を赤く：ON（不足${lackTotal}枚）`:"未所持を赤く"}</button>
       <button class="btn" id="vToggle">${viewGrouped?"全部並べる":"同じカードをまとめる"}</button></div>
     ${tiles.length?`<div class="vfit"><div class="vgrid ${viewGrouped?"grp":""}" id="vgrid">${tiles.join("")}</div></div>`:`<p class="empty">デッキが空です</p>`}
     <p style="color:var(--muted);font-size:12px">スクリーンショットで画像として保存できます（PC：Win+Shift+S）。</p>`, true);
   $("#vToggle").onclick = () => { viewGrouped = !viewGrouped; showDeckView(); };
+  $("#vMiss").onclick = () => {
+    viewMiss = !viewMiss;
+    if (viewMiss && !Object.keys(owned).length) toast("所持カードが未登録です（「所持カード登録」で登録できます）");
+    showDeckView();
+  };
   fitDeckView();
 }
 // PC：全カードが1画面に収まる最大サイズを計算（ブラウザの大きさに比例）
@@ -594,7 +758,7 @@ function fitDeckView(){
   }
   const w = Math.floor(best.w);
   g.style.cssText = `grid-template-columns:repeat(${best.cols},${w}px);--vgap:${gap}px;width:${best.cols*w + gap*(best.cols-1)}px`;
-  g.querySelectorAll(".vq").forEach(q => { q.style.fontSize = Math.max(12, Math.round(w/8)) + "px"; });
+  g.querySelectorAll(".vq").forEach(q => { q.style.fontSize = Math.max(11, Math.round(q.textContent.length > 3 ? w/12 : w/8)) + "px"; q.style.whiteSpace = "nowrap"; });
 }
 window.addEventListener("resize", () => { if ($(".mbox").classList.contains("wide") && $("#modal").classList.contains("open")) fitDeckView(); });
 
@@ -621,8 +785,8 @@ function drawSim(n){
 let tt; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2200); }
 
 /* ---------- 起動 ---------- */
-restoreCurrent();
-detectLocal().then(() => { renderGrid(); renderDeck(); });
+migrateCurrent();
+detectLocal().then(() => setMode("home"));
 })();
 </script>
 </body>
