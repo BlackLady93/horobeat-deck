@@ -95,8 +95,18 @@ input[type=number]{width:54px}
 .detail .vrow img{width:64px;cursor:pointer;border-radius:4px;border:2px solid transparent}
 .detail .vrow img.sel{border-color:var(--accent)}
 textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px;font-family:Consolas,monospace;font-size:13px}
-.vgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
-.vgrid img{width:100%;border-radius:4px;display:block}
+.mbox.wide{max-width:none;width:96vw;height:94vh;max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
+.mbox.wide #mbody{flex:1;display:flex;flex-direction:column;min-height:0}
+.mbox.wide .vfit{flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start}
+.mbox.wide .vgrid{gap:var(--vgap,6px)}
+.vhead{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-right:30px}
+.vhead h2{margin:0;flex:1}
+.vhead small{color:var(--muted);font-size:13px;font-weight:normal}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px}
+.vgrid.grp{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.vt{position:relative;min-width:0}
+.vt img{width:100%;aspect-ratio:600/838;object-fit:cover;border-radius:6px;display:block;background:var(--panel2)}
+.vq{position:absolute;right:4px;bottom:4px;background:var(--accent);color:#1b1306;font-weight:700;font-size:16px;border-radius:12px;padding:2px 10px;box-shadow:0 1px 4px #000a}
 .hand{display:flex;gap:8px;flex-wrap:wrap}
 .hand img{width:130px;border-radius:6px}
 .saved{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
@@ -142,7 +152,10 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
   .mbox{max-height:100vh;height:100%;border-radius:0;padding:14px 12px 30px}
   .detail{grid-template-columns:1fr}
   .detail img{max-width:320px;margin:0 auto;display:block}
-  .vgrid{grid-template-columns:repeat(5,1fr)}
+  .vgrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+  .vgrid.grp{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .vq{font-size:13px;padding:1px 7px;right:3px;bottom:3px}
+  .vhead{flex-wrap:wrap}
   .hand img{width:calc(33% - 6px)}
   textarea{height:45vh}
 }
@@ -441,7 +454,7 @@ function renderStats(ents){
 }
 
 /* ---------- 詳細モーダル ---------- */
-function openModal(html){ $("#mbody").innerHTML = html; $("#modal").classList.add("open"); }
+function openModal(html, wide=false){ $("#mbody").innerHTML = html; document.querySelector(".mbox").classList.toggle("wide", wide); $("#modal").classList.add("open"); }
 function closeModal(){ $("#modal").classList.remove("open"); }
 $("#mx").onclick = closeModal;
 $("#modal").onclick = e => { if (e.target.id==="modal") closeModal(); };
@@ -550,12 +563,37 @@ $("#bExport").onclick = () => {
 };
 
 /* ---------- デッキ画像 ---------- */
-$("#bView").onclick = () => {
-  const imgs = deckEntries().flatMap(({c,n}) => Array(n).fill(`<img src="${imgSrc(c)}" alt="${c.name}">`));
-  openModal(`<h2 style="margin-top:0">${esc(deckName)} <small style="color:var(--muted);font-size:13px">${total()}枚</small></h2>
-    ${imgs.length?`<div class="vgrid">${imgs.join("")}</div>`:`<p class="empty">デッキが空です</p>`}
-    <p style="color:var(--muted);font-size:12px">スクリーンショット（Win+Shift+S）で画像として保存できます。</p>`);
-};
+let viewGrouped = matchMedia("(max-width:900px)").matches; // スマホは最初からまとめ表示
+$("#bView").onclick = () => showDeckView();
+function showDeckView(){
+  const ents = deckEntries();
+  const tiles = viewGrouped
+    ? ents.map(({c,n}) => `<div class="vt"><img src="${imgSrc(c)}" alt="${c.name}"><span class="vq">×${n}</span></div>`)
+    : ents.flatMap(({c,n}) => Array(n).fill(`<div class="vt"><img src="${imgSrc(c)}" alt="${c.name}"></div>`));
+  openModal(`<div class="vhead"><h2>${esc(deckName)} <small>${total()}枚${viewGrouped?` ・ ${ents.length}種類`:""}</small></h2>
+      <button class="btn" id="vToggle">${viewGrouped?"全部並べる":"同じカードをまとめる"}</button></div>
+    ${tiles.length?`<div class="vfit"><div class="vgrid ${viewGrouped?"grp":""}" id="vgrid">${tiles.join("")}</div></div>`:`<p class="empty">デッキが空です</p>`}
+    <p style="color:var(--muted);font-size:12px">スクリーンショットで画像として保存できます（PC：Win+Shift+S）。</p>`, true);
+  $("#vToggle").onclick = () => { viewGrouped = !viewGrouped; showDeckView(); };
+  fitDeckView();
+}
+// PC：全カードが1画面に収まる最大サイズを計算（ブラウザの大きさに比例）
+function fitDeckView(){
+  const g = $("#vgrid");
+  if (!g || matchMedia("(max-width:900px)").matches) { if (g) g.style.cssText = ""; return; }
+  const box = g.parentElement, W = box.clientWidth, H = box.clientHeight;
+  const n = g.children.length, R = 838/600, gap = W > 1600 ? 8 : 6;
+  let best = {w:0, cols:1};
+  for (let cols = 1; cols <= n; cols++){
+    const rows = Math.ceil(n / cols);
+    const w = Math.min((W - gap*(cols-1)) / cols, (H - gap*(rows-1)) / rows / R);
+    if (w > best.w) best = {w, cols};
+  }
+  const w = Math.floor(best.w);
+  g.style.cssText = `grid-template-columns:repeat(${best.cols},${w}px);--vgap:${gap}px;width:${best.cols*w + gap*(best.cols-1)}px`;
+  g.querySelectorAll(".vq").forEach(q => { q.style.fontSize = Math.max(12, Math.round(w/8)) + "px"; });
+}
+window.addEventListener("resize", () => { if ($(".mbox").classList.contains("wide") && $("#modal").classList.contains("open")) fitDeckView(); });
 
 /* ---------- 試しに引く ---------- */
 $("#bDraw").onclick = () => drawSim(5);
