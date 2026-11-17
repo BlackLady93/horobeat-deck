@@ -18,6 +18,8 @@ header{display:flex;align-items:center;gap:16px;padding:10px 16px;border-bottom:
 header h1{font-size:18px;margin:0;letter-spacing:.08em}
 header h1 span{color:var(--accent)}
 header .note{color:var(--muted);font-size:12px;margin-left:auto}
+header .ver{color:var(--muted);font-size:12px;margin-left:12px;white-space:nowrap}
+body:not(.m-build) header .ver{margin-left:auto}
 .app{display:grid;grid-template-columns:1fr 420px;height:calc(100% - 49px)}
 /* ---- left ---- */
 .left{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
@@ -120,8 +122,29 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
 .tabs{display:flex;gap:4px;margin-left:12px}
 .tabs button{background:none;border:1px solid transparent;border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--muted)}
 .tabs button.on{border-color:var(--accent);color:var(--accent)}
-body.m-home .app, body.m-home .mbar{display:none !important}
+body.m-home .app, body.m-home .mbar, body.m-event .app, body.m-event .mbar{display:none !important}
 body:not(.m-home) #home{display:none}
+body:not(.m-event) #eventPane{display:none}
+/* ---- イベント検索 ---- */
+#eventPane{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+#eventPane h2{margin:0 0 4px;font-size:20px}
+#eventPane .lead{color:var(--muted);font-size:13px;margin:0 0 16px;line-height:1.6}
+.ev{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:16px}
+.ev .row{display:flex;flex-direction:column;gap:8px}
+.ev .lbl{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.ev .lbl a{color:var(--accent);font-size:12px;cursor:pointer}
+.ev .chips{display:flex;flex-wrap:wrap;gap:6px}
+.ev .region{display:flex;gap:8px;align-items:flex-start}
+.ev .region .rn{flex:0 0 88px;font-size:12px;color:var(--muted);padding-top:6px;cursor:pointer;user-select:none}
+.ev .region .rn:hover{color:var(--accent)}
+.ev .chip{font-size:13px;padding:4px 10px}
+.ev input[type=date],.ev input[type=text],.ev select{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.ev .dates{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ev .go{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ev .go .btn{font-size:16px;padding:10px 24px;text-decoration:none;display:inline-block}
+.ev .go small{color:var(--muted);font-size:12px}
+.ev .links{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.ev .links a{color:var(--accent)}
 body:not(.m-build) .build-only{display:none !important}
 body:not(.m-coll) .coll-only{display:none !important}
 body:not(.m-build) header .note{display:none}
@@ -233,8 +256,13 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   header{padding:8px 12px;gap:8px}
   header h1{font-size:16px}
   header .note{display:none}
-  .tabs{margin-left:auto}
-  .tabs button{padding:4px 8px;font-size:13px}
+  header{flex-wrap:wrap;row-gap:6px}
+  .tabs{margin-left:0;flex:1;min-width:0;gap:4px}
+  header h1{width:100%}
+  header .ver{margin-left:4px !important;font-size:11px}
+  .tabs button{flex:1;padding:5px 4px;font-size:13px;white-space:nowrap;border-color:var(--line)}
+  .ftoggle{top:0}
+  .ev .region .rn{flex-basis:76px}
   .hgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .htile .ac{flex-wrap:wrap}
   .rform{grid-template-columns:1fr}
@@ -287,9 +315,30 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   <nav class="tabs">
     <button data-go="home" id="tHome">デッキ一覧</button>
     <button data-go="coll" id="tColl">所持カード登録</button>
+    <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
+  <span class="ver">v1.4</span>
 </header>
+<section id="eventPane">
+  <h2>イベント検索</h2>
+  <p class="lead">条件を選んで「公式サイトで検索」を押すと、公式の「ホロビートカードゲーム公認イベント」検索が条件入りで開きます。選んだ条件は次回も残ります。<br>※開催内容は変更になる場合があります。参加前に必ずお店に確認してください。</p>
+  <div class="ev">
+    <div class="row"><div class="lbl"><span>都道府県（複数選択可・地方名を押すとまとめて選択）</span><a id="evPrefClr">選択を解除</a></div><div id="evPrefs"></div></div>
+    <div class="row"><div class="lbl"><span>開催日</span></div>
+      <div class="chips" id="evQuick"></div>
+      <div class="dates"><input type="date" id="evStart"> 〜 <input type="date" id="evEnd"></div></div>
+    <div class="row"><div class="lbl"><span>開始時間（この時間以降）</span></div><select id="evTime"></select></div>
+    <div class="row"><div class="lbl"><span>参加制限</span></div>
+      <select id="evClass"><option value="">すべての参加制限</option><option value="1">小学6年生以下</option><option value="2">年齢制限なし</option></select></div>
+    <div class="row"><div class="lbl"><span>キーワード（店舗名など）</span></div><input type="text" id="evKw" placeholder="例：TSUTAYA"></div>
+    <div class="go"><a class="btn pri" id="evGo" target="_blank" rel="noopener">公式サイトで検索 ↗</a><small id="evSum"></small></div>
+    <div class="links">
+      <a href="https://www.takaratomy.co.jp/products/horobeat-cardgame/event/" target="_blank" rel="noopener">公式のイベント一覧（大会・体験会のお知らせ）↗</a>
+      <a href="https://horobeat-event.jp/" target="_blank" rel="noopener">公認イベント検索（条件なし）↗</a>
+    </div>
+  </div>
+</section>
 <section id="home">
   <div class="hbar"><h2>デッキ一覧</h2><button class="btn pri" id="hNew">＋ 新規</button></div>
   <div class="hfilter" id="hFilter"><span class="t">色で絞り込み</span><span class="cnt" id="hCnt"></span></div>
@@ -459,10 +508,12 @@ function setMode(m){
   document.body.className = "m-" + m;
   $("#tHome").classList.toggle("on", m==="home");
   $("#tColl").classList.toggle("on", m==="coll");
+  $("#tEvent").classList.toggle("on", m==="event");
   $(".right").classList.remove("open"); $("#mdeck").textContent = "デッキを見る";
   $("#mhint").innerHTML = m==="coll" ? "タップ：所持+1<br>長押し：所持−1" : "タップ：追加<br>長押し：1枚削除";
   closeModal();
   if (m==="home") renderHome();
+  else if (m==="event") renderEvent();
   else { renderGrid(); renderDeck(); }
   window.scrollTo(0,0);
 }
@@ -922,6 +973,102 @@ function fitDeckView(){
   g.querySelectorAll(".vq").forEach(q => { q.style.fontSize = Math.max(11, Math.round(q.textContent.length > 3 ? w/12 : w/8)) + "px"; q.style.whiteSpace = "nowrap"; });
 }
 window.addEventListener("resize", () => { if ($(".mbox").classList.contains("wide") && $("#modal").classList.contains("open")) fitDeckView(); });
+
+/* ---------- イベント検索（公式の公認イベント検索を条件付きで開く） ---------- */
+const EV_URL = "https://horobeat-event.jp/";
+const LS_EV = "horobeat_event_v1";
+const PREF_REGIONS = [
+  ["北海道・東北", ["北海道","青森","岩手","宮城","秋田","山形","福島"]],
+  ["関東", ["茨城","栃木","群馬","埼玉","千葉","東京","神奈川"]],
+  ["中部", ["新潟","富山","石川","福井","山梨","長野","岐阜","静岡","愛知"]],
+  ["近畿", ["三重","滋賀","京都","大阪","兵庫","奈良","和歌山"]],
+  ["中国・四国", ["鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知"]],
+  ["九州・沖縄", ["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"]]
+]; // 都道府県コード 1〜47（JIS順）
+let evState = { prefs: [], quick: "", start: "", end: "", time: "", cls: "", kw: "" };
+try { Object.assign(evState, JSON.parse(localStorage.getItem(LS_EV)) || {}); } catch {}
+const saveEv = () => { try { localStorage.setItem(LS_EV, JSON.stringify(evState)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+// 今週の土曜（日曜なら前日の土曜）
+const thisSat = t => t.getDay()===0 ? addDays(t,-1) : addDays(t, 6 - t.getDay());
+const QUICK = [
+  ["today", "今日", () => { const t = new Date(); return [t, t]; }],
+  ["tomorrow", "明日", () => { const t = addDays(new Date(),1); return [t, t]; }],
+  ["weekend", "今週末", () => { const t = new Date(), sat = thisSat(t); return [sat < t ? t : sat, addDays(sat,1)]; }],
+  ["nextweekend", "来週末", () => { const sat = addDays(thisSat(new Date()), 7); return [sat, addDays(sat,1)]; }],
+  ["week", "今日から1週間", () => { const t = new Date(); return [t, addDays(t,6)]; }],
+  ["all", "指定なし", () => ["", ""]],
+];
+function applyQuick(){
+  const q = QUICK.find(x => x[0]===evState.quick); if (!q) return;
+  const [a,b] = q[2](); evState.start = a ? ymd(a) : ""; evState.end = b ? ymd(b) : "";
+}
+function evUrl(){
+  const p = new URLSearchParams();
+  if (evState.prefs.length) p.set("pref", [...evState.prefs].sort((a,b)=>a-b).join(","));
+  if (evState.start) p.set("startDate", evState.start.replace(/-/g,"/"));
+  if (evState.end) p.set("endDate", evState.end.replace(/-/g,"/"));
+  if (evState.time) p.set("startTime", evState.time);
+  if (evState.cls) p.set("entryClass", evState.cls);
+  if (evState.kw) p.set("keyword", evState.kw);
+  const qs = p.toString().replace(/%2C/g,",").replace(/%2F/g,"/");
+  return EV_URL + (qs ? "?" + qs : "");
+}
+let evBuilt = false;
+function renderEvent(){
+  if (!evBuilt){
+    evBuilt = true;
+    let code = 0;
+    $("#evPrefs").innerHTML = PREF_REGIONS.map(([rn, ps]) => `<div class="region"><span class="rn" data-rn="${rn}">${rn}</span><div class="chips">${
+      ps.map(pn => `<span class="chip" data-pc="${++code}">${pn}</span>`).join("")}</div></div>`).join("");
+    $("#evPrefs").querySelectorAll("[data-pc]").forEach(ch => ch.onclick = () => {
+      const c = +ch.dataset.pc; evState.prefs = evState.prefs.includes(c) ? evState.prefs.filter(x=>x!==c) : [...evState.prefs, c]; evChanged();
+    });
+    $("#evPrefs").querySelectorAll("[data-rn]").forEach(r => r.onclick = () => {
+      const codes = [...r.nextElementSibling.querySelectorAll("[data-pc]")].map(e=>+e.dataset.pc);
+      const allOn = codes.every(c => evState.prefs.includes(c));
+      evState.prefs = allOn ? evState.prefs.filter(c=>!codes.includes(c)) : [...new Set([...evState.prefs, ...codes])]; evChanged();
+    });
+    $("#evPrefClr").onclick = () => { evState.prefs = []; evChanged(); };
+    $("#evQuick").innerHTML = QUICK.map(q => `<span class="chip" data-q="${q[0]}">${q[1]}</span>`).join("");
+    $("#evQuick").querySelectorAll("[data-q]").forEach(ch => ch.onclick = () => { evState.quick = ch.dataset.q; applyQuick(); evChanged(); });
+    $("#evStart").onchange = e => { evState.start = e.target.value; evState.quick = ""; if (evState.end && evState.end < evState.start) evState.end = evState.start; evChanged(); };
+    $("#evEnd").onchange = e => { evState.end = e.target.value; evState.quick = ""; evChanged(); };
+    $("#evTime").innerHTML = `<option value="">指定なし</option>` + [...Array(22)].map((_,i) => { const h = 8 + Math.floor(i/2), m = i%2 ? "30" : "00"; return `<option value="${String(h).padStart(2,"0")}${m}">${h}:${m}</option>`; }).join("");
+    $("#evTime").onchange = e => { evState.time = e.target.value; evChanged(); };
+    $("#evClass").onchange = e => { evState.cls = e.target.value; evChanged(); };
+    $("#evKw").oninput = e => { evState.kw = e.target.value.trim(); evChanged(false); };
+  }
+  // 「今日」「今週末」などは開くたびに日付を計算し直す
+  if (evState.quick) applyQuick();
+  // 過去の日付は公式側で選べないので外す
+  const today = ymd(new Date());
+  if (evState.start && evState.start < today) evState.start = today;
+  if (evState.end && evState.end < today) { evState.start = ""; evState.end = ""; evState.quick = ""; }
+  $("#evStart").min = $("#evEnd").min = today;
+  evChanged();
+}
+function evChanged(rerenderInputs = true){
+  saveEv();
+  document.querySelectorAll("#evPrefs [data-pc]").forEach(ch => ch.classList.toggle("on", evState.prefs.includes(+ch.dataset.pc)));
+  document.querySelectorAll("#evQuick [data-q]").forEach(ch => ch.classList.toggle("on", ch.dataset.q===evState.quick));
+  if (rerenderInputs){
+    $("#evStart").value = evState.start; $("#evEnd").value = evState.end;
+    $("#evTime").value = evState.time; $("#evClass").value = evState.cls; $("#evKw").value = evState.kw;
+  }
+  $("#evGo").href = evUrl();
+  const names = evState.prefs.slice().sort((a,b)=>a-b).map(c => document.querySelector(`#evPrefs [data-pc="${c}"]`)?.textContent);
+  const fd = d => d ? d.slice(5).replace("-","/") : "";
+  const parts = [
+    names.length ? (names.length > 4 ? `${names.slice(0,4).join("・")}ほか${names.length-4}件` : names.join("・")) : "全国",
+    evState.start || evState.end ? `${fd(evState.start)}〜${fd(evState.end)}` : "日付指定なし",
+  ];
+  if (evState.time) parts.push(`${+evState.time.slice(0,2)}:${evState.time.slice(2)}以降`);
+  if (evState.cls) parts.push($("#evClass").selectedOptions[0]?.text || "");
+  if (evState.kw) parts.push(`「${evState.kw}」`);
+  $("#evSum").textContent = parts.join(" ／ ");
+}
 
 /* ---------- 対戦記録 ---------- */
 const loadRecs = () => { try { return JSON.parse(localStorage.getItem(LS_REC)) || {}; } catch { return {}; } };
