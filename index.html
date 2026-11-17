@@ -144,6 +144,32 @@ body.m-coll .app{grid-template-columns:1fr}
 .htile .ac .btn{padding:3px 10px;font-size:12px}
 .hempty{display:flex;justify-content:center;padding:80px 0}
 .hempty .btn{font-size:18px;padding:12px 32px}
+.wl{font-weight:700;color:var(--text)} .wl b{color:var(--accent)}
+/* ---- 対戦記録 ---- */
+.rec h2{margin:0 0 4px;font-size:19px;padding-right:30px}
+.rsum{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin:6px 0 12px}
+.rsum .big{font-size:26px;font-weight:800}
+.rsum .big small{font-size:14px;color:var(--muted);font-weight:normal;margin-left:6px}
+.rsum .sub{font-size:13px;color:var(--muted)}
+.rsum .sub b{color:var(--text)}
+.rform{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;grid-template-columns:auto 1fr;gap:10px 12px;align-items:center;margin-bottom:14px}
+.rform label.k{color:var(--muted);font-size:12px;white-space:nowrap}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg .chip{padding:6px 14px}
+.seg .chip.w.on{border-color:var(--ok);background:#1e3a1d;color:#cdeec9}
+.seg .chip.l.on{border-color:var(--danger);background:#4a1f1b;color:#ffd0ca}
+.rform input[type=text],.rform input[type=datetime-local]{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.rform .act{grid-column:1/-1;display:flex;justify-content:flex-end}
+.rlist{display:flex;flex-direction:column;gap:6px}
+.rrow{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;background:var(--panel2);border-radius:8px;padding:8px 10px}
+.rrow .res{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.rrow .res.W{background:var(--ok);color:#0d1a0c} .rrow .res.L{background:var(--danger);color:#fff} .rrow .res.D{background:#777;color:#fff}
+.rrow .dt{font-size:11px;color:var(--muted);line-height:1.4;white-space:nowrap}
+.rrow .op{min-width:0}
+.rrow .op div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .op small{color:var(--muted);font-size:12px;display:block;white-space:normal}
+.rrow .rx{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px}
+.tag{font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:4px;color:var(--muted)}
 /* ---- 所持登録 ---- */
 body.m-coll .card .qty{background:var(--ok);color:#0d1a0c}
 body.m-coll .card.none img{opacity:.45}
@@ -207,6 +233,9 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   .tabs{margin-left:auto}
   .tabs button{padding:4px 8px;font-size:13px}
   .hgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .htile .ac{flex-wrap:wrap}
+  .rform{grid-template-columns:1fr}
+  .rform label.k{margin-bottom:-6px}
   .htile .th{height:80px}
   .app{display:block;height:auto}
   .left{border-right:none;padding-bottom:64px;overflow-x:hidden}
@@ -310,6 +339,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
         <button class="btn" id="bBack">← 一覧へ</button>
         <button class="btn pri" id="bSave">保存</button>
         <button class="btn" id="bSheet">デッキシート</button>
+        <button class="btn" id="bRec">対戦記録</button>
         <button class="btn" id="bView">デッキ画像</button>
         <button class="btn" id="bDraw">試しに引く</button>
         <button class="btn" id="bExport">書き出し/読込</button>
@@ -355,7 +385,7 @@ const COLORS = ["赤","緑","青"];
 const COLOR_HEX = {赤:"var(--red)",緑:"var(--green)",青:"var(--blue)"};
 const RARS = ["C","UC","R","SR","DR","SEC"];
 const ORDER = Object.fromEntries(CARDS.map((c,i)=>[c.id,i]));
-const LS_KEY = "horobeat_decks_v1", LS_CUR = "horobeat_current_v1", LS_OWN = "horobeat_owned_v1";
+const LS_KEY = "horobeat_decks_v1", LS_CUR = "horobeat_current_v1", LS_OWN = "horobeat_owned_v1", LS_REC = "horobeat_records_v1";
 const $ = s => document.querySelector(s);
 
 /* ---------- 画像：ローカル img/ があれば優先、なければ公式URL ---------- */
@@ -460,12 +490,19 @@ function renderHome(){
     return `<div class="htile" data-open="${k}">
       <div class="th">${thumbs}</div>
       <div class="bd"><div class="nm">${esc(d.name)}</div>
-        <div class="mt">${cols}<span class="${n===DECK_SIZE?"ok":"ng"}">${n}/${DECK_SIZE}枚</span><span>${new Date(d.updated).toLocaleDateString("ja-JP")}</span></div></div>
-      <div class="ac"><button class="btn" data-dup="${k}">複製</button><button class="btn dng" data-del="${k}">削除</button></div>
+        <div class="mt">${cols}<span class="${n===DECK_SIZE?"ok":"ng"}">${n}/${DECK_SIZE}枚</span><span>${new Date(d.updated).toLocaleDateString("ja-JP")}</span></div>
+        ${(() => { const st = recStats(loadRecs()[k]||[]); return st.n ? `<div class="mt"><span class="wl">${st.w}勝${st.l}敗${st.d?st.d+"分":""}</span><span>勝率 <b style="color:var(--accent)">${st.rate}</b></span></div>` : ""; })()}</div>
+      <div class="ac"><button class="btn" data-rec="${k}">対戦記録</button><button class="btn" data-dup="${k}">複製</button><button class="btn dng" data-del="${k}">削除</button></div>
     </div>`;}).join("")}</div>`;
   el.querySelectorAll("[data-open]").forEach(t => t.onclick = e => { if (e.target.closest("button")) return; openDeck(t.dataset.open); });
   el.querySelectorAll("[data-dup]").forEach(b => b.onclick = () => { const d=all[b.dataset.dup]; all["d"+Date.now()]={...d,name:d.name+" のコピー",updated:new Date().toISOString()}; saveAll(all); renderHome(); });
-  el.querySelectorAll("[data-del]").forEach(b => b.onclick = () => { if(!confirmInline()) return; delete all[b.dataset.del]; saveAll(all); renderHome(); toast("削除しました"); });
+  el.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    if(!confirmInline()) return;
+    delete all[b.dataset.del]; saveAll(all);
+    const r = loadRecs(); delete r[b.dataset.del]; saveRecs(r);
+    renderHome(); toast("削除しました");
+  });
+  el.querySelectorAll("[data-rec]").forEach(b => b.onclick = () => showRecords(b.dataset.rec));
 }
 
 /* ---------- フィルタUI ---------- */
@@ -869,6 +906,80 @@ function fitDeckView(){
   g.querySelectorAll(".vq").forEach(q => { q.style.fontSize = Math.max(11, Math.round(q.textContent.length > 3 ? w/12 : w/8)) + "px"; q.style.whiteSpace = "nowrap"; });
 }
 window.addEventListener("resize", () => { if ($(".mbox").classList.contains("wide") && $("#modal").classList.contains("open")) fitDeckView(); });
+
+/* ---------- 対戦記録 ---------- */
+const loadRecs = () => { try { return JSON.parse(localStorage.getItem(LS_REC)) || {}; } catch { return {}; } };
+const saveRecs = o => { try { localStorage.setItem(LS_REC, JSON.stringify(o)); } catch { toast("保存できませんでした"); } };
+function recStats(list){
+  const w = list.filter(r=>r.res==="W").length, l = list.filter(r=>r.res==="L").length, d = list.filter(r=>r.res==="D").length;
+  const rate = (w+l) ? (w/(w+l)*100).toFixed(1) + "%" : "-";
+  return {n:list.length, w, l, d, rate};
+}
+let recForm = {res:"", turn:"", opp:[]};
+$("#bRec").onclick = () => { if (!editingKey) autoSave(true); showRecords(editingKey); };
+function showRecords(key){
+  const all = loadAll(), deckD = all[key]; if (!deckD) return;
+  const recs = loadRecs(), list = (recs[key]||[]).slice().sort((a,b)=>b.at.localeCompare(a.at));
+  const st = recStats(list);
+  const by = f => { const o = {}; list.forEach(r => { const k = f(r); if (!k) return; (o[k] ||= []).push(r); }); return o; };
+  const fmt = (lbl, arr) => { const s2 = recStats(arr); return `<span class="sub">${lbl} <b>${s2.w}勝${s2.l}敗${s2.d?s2.d+"分":""}</b>（${s2.rate}）</span>`; };
+  const turn = by(r=>r.turn), col = {};
+  list.forEach(r => (r.opp||[]).forEach(c => (col[c] ||= []).push(r)));
+  const names = [...new Set(Object.values(recs).flat().map(r=>r.oppName).filter(Boolean))];
+  const now = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+  openModal(`<div class="rec">
+    <h2>対戦記録：${esc(deckD.name)}</h2>
+    <div class="rsum">
+      <span class="big">${st.w}勝${st.l}敗${st.d?st.d+"分":""}<small>${st.n}戦 ・ 勝率 ${st.rate}</small></span>
+      ${turn["1"]?fmt("先攻",turn["1"]):""}${turn["2"]?fmt("後攻",turn["2"]):""}
+      ${COLORS.filter(c=>col[c]).map(c=>fmt(`vs <i class="dot" style="background:${COLOR_HEX[c]}"></i>${c}`, col[c])).join("")}
+    </div>
+    <div class="rform">
+      <label class="k">結果</label>
+      <div class="seg" id="fRes"><span class="chip w" data-v="W">勝ち</span><span class="chip l" data-v="L">負け</span><span class="chip" data-v="D">引き分け</span></div>
+      <label class="k">先攻/後攻</label>
+      <div class="seg" id="fTurn"><span class="chip" data-v="1">先攻</span><span class="chip" data-v="2">後攻</span></div>
+      <label class="k">相手の色</label>
+      <div class="seg" id="fOpp">${COLORS.map(c=>`<span class="chip c-${c}" data-v="${c}">${c}</span>`).join("")}</div>
+      <label class="k">相手のデッキ</label>
+      <input type="text" id="fName" list="oppNames" placeholder="例：青ジャスティス" maxlength="40">
+      <datalist id="oppNames">${names.map(n=>`<option value="${esc(n)}">`).join("")}</datalist>
+      <label class="k">メモ</label>
+      <input type="text" id="fMemo" placeholder="例：店舗大会 2回戦、事故った など" maxlength="200">
+      <label class="k">日時</label>
+      <input type="datetime-local" id="fAt" value="${now}">
+      <div class="act"><button class="btn pri" id="fAdd">記録する</button></div>
+    </div>
+    <div class="rlist">${list.length ? list.map(r => `
+      <div class="rrow">
+        <div class="res ${r.res}">${{W:"勝",L:"負",D:"分"}[r.res]}</div>
+        <div class="dt">${new Date(r.at).toLocaleDateString("ja-JP")}<br>${new Date(r.at).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</div>
+        <div class="op"><div>${r.turn?`<span class="tag">${r.turn==="1"?"先攻":"後攻"}</span>`:""}${(r.opp||[]).map(c=>`<i class="dot" style="background:${COLOR_HEX[c]}"></i>`).join("")}${esc(r.oppName||"")}</div>${r.memo?`<small>${esc(r.memo)}</small>`:""}</div>
+        <button class="rx" data-rdel="${r.id}" title="削除">×</button>
+      </div>`).join("") : `<p class="empty" style="padding:20px">まだ記録がありません</p>`}</div>
+  </div>`);
+  // 前回の入力（先攻後攻・結果）は残さず、相手情報だけリセット
+  recForm = {res:"", turn:"", opp:[]};
+  const seg = (sel, key, multi=false) => document.querySelectorAll(sel+" .chip").forEach(ch => ch.onclick = () => {
+    const v = ch.dataset.v;
+    if (multi) { const a = recForm[key]; a.includes(v) ? a.splice(a.indexOf(v),1) : a.push(v); ch.classList.toggle("on"); }
+    else { recForm[key] = recForm[key]===v ? "" : v; document.querySelectorAll(sel+" .chip").forEach(c=>c.classList.toggle("on", c.dataset.v===recForm[key])); }
+  });
+  seg("#fRes","res"); seg("#fTurn","turn"); seg("#fOpp","opp",true);
+  $("#fAdd").onclick = () => {
+    if (!recForm.res) return toast("勝ち・負け・引き分けを選んでください");
+    const at = $("#fAt").value ? new Date($("#fAt").value).toISOString() : new Date().toISOString();
+    const r2 = loadRecs();
+    (r2[key] ||= []).push({ id: "r"+Date.now(), at, res: recForm.res, turn: recForm.turn, opp: [...recForm.opp],
+      oppName: $("#fName").value.trim(), memo: $("#fMemo").value.trim() });
+    saveRecs(r2); toast("記録しました"); showRecords(key); if (mode==="home") renderHome();
+  };
+  document.querySelectorAll("[data-rdel]").forEach(b => b.onclick = () => {
+    if (!confirmInline()) return;
+    const r2 = loadRecs(); r2[key] = (r2[key]||[]).filter(r => r.id !== b.dataset.rdel); saveRecs(r2);
+    showRecords(key); if (mode==="home") renderHome();
+  });
+}
 
 /* ---------- デッキシート（スクリーンショット用） ---------- */
 const SHEET_CREDIT = "BlackLady93";
