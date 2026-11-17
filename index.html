@@ -245,6 +245,8 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 #sheet .st img{width:100%;height:100%;object-fit:cover;display:block}
 #sheet .st.empty{border:2px dashed rgba(217,164,65,.25);box-shadow:none}
 #sheet .st.miss::after{content:"";position:absolute;inset:0;background:rgba(230,50,50,.42)}
+#sheet .st .sq{position:absolute;right:5px;bottom:5px;z-index:1;background:var(--accent);color:#1b1306;font-weight:800;border-radius:12px;padding:1px 10px;box-shadow:0 1px 4px #000a;white-space:nowrap}
+#sheet .st.miss .sq{background:#e0584c;color:#fff}
 #sheetBar{position:fixed;top:10px;right:10px;z-index:81;display:flex;gap:6px;transition:opacity .3s}
 #sheetBar.hide{opacity:0;pointer-events:none}
 #sheetBar .hint{align-self:center;background:#000c;color:#fff;font-size:12px;padding:4px 10px;border-radius:6px}
@@ -318,7 +320,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.4</span>
+  <span class="ver">v1.5</span>
 </header>
 <section id="eventPane">
   <h2>イベント検索</h2>
@@ -391,9 +393,8 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
       <div class="row" style="flex-wrap:wrap">
         <button class="btn" id="bBack">← 一覧へ</button>
         <button class="btn pri" id="bSave">保存</button>
-        <button class="btn" id="bSheet">デッキシート</button>
+        <button class="btn" id="bSheet">画像出力</button>
         <button class="btn" id="bRec">対戦記録</button>
-        <button class="btn" id="bView">デッキ画像</button>
         <button class="btn" id="bDraw">試しに引く</button>
         <button class="btn" id="bExport">書き出し/読込</button>
         <button class="btn dng" id="bClear">全削除</button>
@@ -422,6 +423,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 <div id="sheetWrap"><div id="sheet"></div></div>
 <div id="sheetBar" class="hide">
   <span class="hint">画面をタップでボタン表示／スクショして保存</span>
+  <button class="btn" id="sGrp">まとめる</button>
   <button class="btn" id="sMiss">未所持を赤く</button>
   <button class="btn pri" id="sSave">画像を保存</button>
   <button class="btn" id="sClose">閉じる</button>
@@ -931,7 +933,7 @@ $("#bCollIO").onclick = () => {
 /* ---------- デッキ画像 ---------- */
 let viewGrouped = matchMedia("(max-width:900px)").matches; // スマホは最初からまとめ表示
 let viewMiss = false; // 未所持を赤く
-$("#bView").onclick = () => showDeckView();
+
 function showDeckView(){
   const ents = deckEntries();
   // 同名ごとの不足枚数＝デッキ内の枚数−所持枚数（後ろのカードから割り当て）
@@ -1147,6 +1149,20 @@ function showRecords(key){
 /* ---------- デッキシート（スクリーンショット用） ---------- */
 const SHEET_CREDIT = "BlackLady93";
 let sheetMiss = false, sheetBarTimer = null;
+let sheetGrouped = matchMedia("(max-width:900px)").matches; // スマホは最初からまとめ表示
+$("#sGrp").onclick = e => { e.stopPropagation(); sheetGrouped = !sheetGrouped; renderSheet(); showSheetBar(); };
+// カード欄（1186×924）に収まる並べ方：全部並べる＝10×5固定、まとめる＝枚数に合わせて最大サイズ
+function sheetGrid(n){
+  const GW = 1186, GH = 924;
+  if (!sheetGrouped || n === 0) { const gap = 8, w = (GW - gap*9)/10; return {cols:10, w, h:w*838/600, gap}; }
+  const gap = 12; let best = {w:0, cols:1};
+  for (let cols = 1; cols <= n; cols++){
+    const rows = Math.ceil(n/cols);
+    const w = Math.min((GW - gap*(cols-1))/cols, (GH - gap*(rows-1))/rows*600/838);
+    if (w > best.w) best = {w, cols};
+  }
+  return {cols: best.cols, w: best.w, h: best.w*838/600, gap};
+}
 $("#bSheet").onclick = () => { $("#sheetWrap").classList.add("open"); renderSheet(); showSheetBar(); };
 $("#sClose").onclick = () => { $("#sheetWrap").classList.remove("open"); $("#sheetBar").classList.add("hide"); };
 $("#sMiss").onclick = () => {
@@ -1159,6 +1175,7 @@ function showSheetBar(){
   const b = $("#sheetBar"); b.classList.remove("hide");
   $("#sMiss").classList.toggle("on", sheetMiss);
   $("#sMiss").textContent = sheetMiss ? "未所持を赤く：ON" : "未所持を赤く";
+  $("#sGrp").textContent = sheetGrouped ? "全部並べる" : "まとめる";
   clearTimeout(sheetBarTimer); sheetBarTimer = setTimeout(() => b.classList.add("hide"), 2500);
 }
 function renderSheet(){
@@ -1169,8 +1186,15 @@ function renderSheet(){
   const missOf = ents.map(() => 0);
   for (let i = ents.length-1; i >= 0; i--){ const nm = ents[i].c.name; if (left[nm]) { const k = Math.min(ents[i].n, left[nm]); missOf[i] = k; left[nm] -= k; } }
   const lack = missOf.reduce((a,b)=>a+b,0);
-  const tiles = ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => `<div class="st ${j >= n-missOf[i] ? "miss":""}"><img src="${imgSrc(c)}" alt=""></div>`));
-  while (tiles.length < DECK_SIZE) tiles.push(`<div class="st empty"></div>`);
+  const g = sheetGrid(sheetGrouped ? ents.length : DECK_SIZE);
+  let tiles;
+  if (sheetGrouped){
+    const fs = Math.max(13, Math.round(g.w/7));
+    tiles = ents.map(({c,n},i) => `<div class="st ${missOf[i]?"miss":""}"><img src="${imgSrc(c)}" alt=""><span class="sq" style="font-size:${missOf[i]?Math.round(fs*.7):fs}px">×${n}${missOf[i]?`（不足${missOf[i]}）`:""}</span></div>`);
+  } else {
+    tiles = ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => `<div class="st ${j >= n-missOf[i] ? "miss":""}"><img src="${imgSrc(c)}" alt=""></div>`));
+    while (tiles.length < DECK_SIZE) tiles.push(`<div class="st empty"></div>`);
+  }
   const h = ents.filter(e=>e.c.type==="ホロビト").reduce((s,e)=>s+e.n,0);
   const col = {}; ents.forEach(({c,n}) => col[c.color] = (col[c.color]||0) + n);
   const bk = [...Array(11)].map(()=>({h:0,w:0}));
@@ -1199,7 +1223,7 @@ function renderSheet(){
         </div>
         <div class="credit">Created by ${esc(SHEET_CREDIT)}<small>${new Date().toLocaleDateString("ja-JP")}</small></div>
       </div>
-      <div class="cards">${tiles.join("")}</div>
+      <div class="cards" style="grid-template-columns:repeat(${g.cols},${g.w}px);gap:${g.gap}px;justify-content:center">${tiles.join("")}</div>
     </div>`;
   fitSheet();
 }
@@ -1297,21 +1321,35 @@ async function drawSheetCanvas(){
   x.textBaseline = "top";
 
   // カード
-  const GX = LX + LW + 34, GW = W - 40 - GX, gap = 8;
-  const cw = (GW - gap*9) / 10, ch = cw * 838/600;
-  const gy = 38 + (H - 76 - (ch*5 + gap*4)) / 2;
-  const imgs = await Promise.all(tiles.map(tl => loadCardImg(tl.c)));
+  // まとめる表示：1種類1枚＋枚数バッジ
+  const list = sheetGrouped ? ents.map(({c,n},i) => ({c, n, miss: missOf[i]})) : tiles;
+  const slots = sheetGrouped ? list.length : DECK_SIZE;
+  const gd = sheetGrid(slots), cw = gd.w, ch = gd.h, gap = gd.gap, cols = gd.cols;
+  const GX0 = LX + LW + 34, GW = W - 40 - GX0;
+  const GX = GX0 + (GW - (cols*cw + gap*(cols-1))) / 2;
+  const rows = Math.ceil(slots / cols);
+  const gy = 38 + (H - 76 - (ch*rows + gap*(rows-1))) / 2;
+  const imgs = await Promise.all(list.map(tl => loadCardImg(tl.c)));
   let failed = 0;
-  for (let k = 0; k < DECK_SIZE; k++){
-    const cx = GX + (k%10)*(cw+gap), cy = gy + Math.floor(k/10)*(ch+gap);
+  for (let k = 0; k < slots; k++){
+    const cx = GX + (k%cols)*(cw+gap), cy = gy + Math.floor(k/cols)*(ch+gap);
     x.save(); pill(cx, cy, cw, ch, 6); x.clip();
-    if (k < tiles.length){
+    if (k < list.length){
       if (imgs[k]) x.drawImage(imgs[k], cx, cy, cw, ch);
-      else { failed++; x.fillStyle = "#2a231f"; x.fillRect(cx,cy,cw,ch); x.fillStyle = TX; x.font = `12px ${FONT}`; x.fillText(tiles[k].c.name.slice(0,7), cx+6, cy+8); }
-      if (tiles[k].miss){ x.fillStyle = "rgba(230,50,50,.42)"; x.fillRect(cx,cy,cw,ch); }
+      else { failed++; x.fillStyle = "#2a231f"; x.fillRect(cx,cy,cw,ch); x.fillStyle = TX; x.font = `12px ${FONT}`; x.fillText(list[k].c.name.slice(0,7), cx+6, cy+8); }
+      if (list[k].miss){ x.fillStyle = "rgba(230,50,50,.42)"; x.fillRect(cx,cy,cw,ch); }
     }
     x.restore();
-    if (k >= tiles.length){ x.setLineDash([6,5]); x.strokeStyle = "rgba(217,164,65,.25)"; x.lineWidth = 2; pill(cx+1, cy+1, cw-2, ch-2, 6); x.stroke(); x.setLineDash([]); }
+    if (sheetGrouped && k < list.length){
+      const it = list[k], fs0 = Math.max(13, Math.round(cw/7)), fs = it.miss ? Math.round(fs0*.7) : fs0;
+      const label = `×${it.n}${it.miss ? `（不足${it.miss}）` : ""}`;
+      x.font = `800 ${fs}px ${FONT}`; const tw = x.measureText(label).width, bw = tw + 20, bh = fs + 8;
+      const bx = cx + cw - bw - 5, by = cy + ch - bh - 5;
+      x.shadowColor = "rgba(0,0,0,.6)"; x.shadowBlur = 4;
+      pill(bx, by, bw, bh, bh/2); x.fillStyle = it.miss ? "#e0584c" : AC; x.fill();
+      x.shadowBlur = 0; x.fillStyle = it.miss ? "#fff" : "#1b1306"; x.textBaseline = "middle"; x.fillText(label, bx + 10, by + bh/2 + 1); x.textBaseline = "top";
+    }
+    if (k >= list.length){ x.setLineDash([6,5]); x.strokeStyle = "rgba(217,164,65,.25)"; x.lineWidth = 2; pill(cx+1, cy+1, cw-2, ch-2, 6); x.stroke(); x.setLineDash([]); }
   }
   return {cv, failed};
 }
