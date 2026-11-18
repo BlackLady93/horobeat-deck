@@ -209,47 +209,22 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 /* ---- デッキシート（スクショ用） ---- */
 #sheetWrap{position:fixed;inset:0;z-index:80;background:#050403;display:none;overflow:hidden}
 #sheetWrap.open{display:block}
-#sheet{position:absolute;left:50%;top:50%;width:1600px;height:1000px;transform-origin:center center;
-  background:
-    radial-gradient(ellipse at 20% 0%,#3a2a14 0%,transparent 55%),
-    radial-gradient(ellipse at 100% 100%,#24170b 0%,transparent 50%),
-    repeating-linear-gradient(45deg,rgba(217,164,65,.045) 0 2px,transparent 2px 18px),
-    #15100c;
-  color:var(--text);font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif}
-#sheet .frame{position:absolute;inset:14px;border:4px solid var(--accent);border-radius:6px;box-shadow:inset 0 0 0 3px #15100c,inset 0 0 0 4px rgba(217,164,65,.55)}
-#sheet .corner{position:absolute;width:26px;height:26px;border:3px solid var(--accent);transform:rotate(45deg);background:#15100c}
-#sheet .in{position:absolute;inset:38px 40px;display:grid;grid-template-columns:300px 1fr;gap:34px}
-#sheet .side{display:flex;flex-direction:column;gap:18px;min-width:0}
-#sheet .ttl{font-size:34px;font-weight:800;line-height:1.25;word-break:break-all;letter-spacing:.02em}
-#sheet .sub{font-size:15px;color:var(--accent);letter-spacing:.3em;margin-top:-10px}
-#sheet .badges{display:flex;flex-wrap:wrap;gap:8px}
-#sheet .bd{border-radius:999px;padding:6px 16px;font-size:19px;font-weight:700;color:#fff;white-space:nowrap}
-#sheet .bd.total{background:#000;border:2px solid var(--accent);color:var(--accent)}
-#sheet .bd.total.ok{color:#fff;border-color:var(--ok)}
-#sheet .bd.h{background:#a8792a}
-#sheet .bd.w{background:#4d6d91}
-#sheet .bd.赤{background:var(--red)} #sheet .bd.緑{background:var(--green)} #sheet .bd.青{background:var(--blue)}
-#sheet .bd.miss{background:#e0584c}
-#sheet .hist{background:rgba(0,0,0,.35);border:1px solid rgba(217,164,65,.3);border-radius:10px;padding:14px 14px 8px}
-#sheet .hist h5{margin:0 0 8px;font-size:14px;color:var(--muted);font-weight:normal;display:flex;justify-content:space-between}
-#sheet .bars{display:flex;align-items:flex-end;gap:5px;height:190px}
-#sheet .bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
-#sheet .bars .n{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:2px}
-#sheet .bars .bar{width:100%;background:linear-gradient(#e6bc63,#9d6e22);border-radius:3px 3px 0 0}
-#sheet .bars .bar.w{background:linear-gradient(#a6bfd9,#557ca6);border-radius:0}
-#sheet .bars .l{font-size:14px;color:var(--muted);margin-top:4px}
-#sheet .credit{margin-top:auto;font-family:"Segoe Script","Brush Script MT","Snell Roundhand",cursive;font-size:30px;font-weight:700;color:var(--accent);line-height:1.2}
-#sheet .credit small{display:block;font-family:inherit;font-size:14px;color:var(--muted);font-weight:normal;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif}
-#sheet .cards{display:grid;grid-template-columns:repeat(10,1fr);grid-auto-rows:min-content;gap:8px;align-content:center}
-#sheet .st{position:relative;aspect-ratio:600/838;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.04);box-shadow:0 2px 6px #000a}
-#sheet .st img{width:100%;height:100%;object-fit:cover;display:block}
-#sheet .st.empty{border:2px dashed rgba(217,164,65,.25);box-shadow:none}
-#sheet .st.miss::after{content:"";position:absolute;inset:0;background:rgba(230,50,50,.42)}
-#sheet .st .sq{position:absolute;right:5px;bottom:5px;z-index:1;background:var(--accent);color:#1b1306;font-weight:800;border-radius:12px;padding:1px 10px;box-shadow:0 1px 4px #000a;white-space:nowrap}
-#sheet .st.miss .sq{background:#e0584c;color:#fff}
-#sheetBar{position:fixed;top:10px;right:10px;z-index:81;display:flex;gap:6px;transition:opacity .3s}
+#sheet{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#sheet canvas{display:block;box-shadow:0 4px 24px #000}
+#sheetWrap.portrait #sheet{align-items:flex-start;padding-top:8px;bottom:122px}
+#sheetBar{position:fixed;top:10px;right:10px;left:10px;z-index:81;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px;transition:opacity .3s;pointer-events:none}
+#sheetBar > *{pointer-events:auto}
+#sheetBar .btn{white-space:nowrap;flex:0 0 auto}
 #sheetBar.hide{opacity:0;pointer-events:none}
-#sheetBar .hint{align-self:center;background:#000c;color:#fff;font-size:12px;padding:4px 10px;border-radius:6px}
+#sheetBar.hide > *{pointer-events:none}
+/* 縦長（スマホ）：ボタンはシートの下に常に表示 */
+#sheetWrap.portrait + #sheetBar{top:auto;bottom:calc(12px + env(safe-area-inset-bottom));justify-content:center;opacity:1}
+#sheetWrap.portrait + #sheetBar > *{pointer-events:auto}
+#sheetWrap.portrait + #sheetBar .hint{display:none}
+#sheetWrap.portrait + #sheetBar #sSave{order:-1;flex:1 1 100%;font-size:17px;padding:12px;border-radius:999px}
+#sheetWrap.portrait + #sheetBar .btn:not(#sSave){flex:1 1 0;min-width:0;padding:9px 4px}
+#sheetBar .hint{background:#000c;color:#fff;font-size:12px;padding:4px 10px;border-radius:6px;white-space:nowrap}
+@media (max-width:900px){ #sheetBar .hint{flex-basis:100%;text-align:center;white-space:normal} #sheetBar .btn{padding:8px 10px;font-size:13px} }
 .card img,.drow img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .card,.drow,.btn,.chip,.qbox button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @media (hover:none){.card .info{opacity:1}.card:hover{transform:none}}
@@ -320,7 +295,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.5</span>
+  <span class="ver">v1.6</span>
 </header>
 <section id="eventPane">
   <h2>イベント検索</h2>
@@ -1151,19 +1126,8 @@ const SHEET_CREDIT = "BlackLady93";
 let sheetMiss = false, sheetBarTimer = null;
 let sheetGrouped = matchMedia("(max-width:900px)").matches; // スマホは最初からまとめ表示
 $("#sGrp").onclick = e => { e.stopPropagation(); sheetGrouped = !sheetGrouped; renderSheet(); showSheetBar(); };
-// カード欄（1186×924）に収まる並べ方：全部並べる＝10×5固定、まとめる＝枚数に合わせて最大サイズ
-function sheetGrid(n){
-  const GW = 1186, GH = 924;
-  if (!sheetGrouped || n === 0) { const gap = 8, w = (GW - gap*9)/10; return {cols:10, w, h:w*838/600, gap}; }
-  const gap = 12; let best = {w:0, cols:1};
-  for (let cols = 1; cols <= n; cols++){
-    const rows = Math.ceil(n/cols);
-    const w = Math.min((GW - gap*(cols-1))/cols, (GH - gap*(rows-1))/rows*600/838);
-    if (w > best.w) best = {w, cols};
-  }
-  return {cols: best.cols, w: best.w, h: best.w*838/600, gap};
-}
-$("#bSheet").onclick = () => { $("#sheetWrap").classList.add("open"); renderSheet(); showSheetBar(); };
+
+$("#bSheet").onclick = () => { $("#sheetWrap").classList.add("open"); $("#sheet").replaceChildren(); lastPortrait = sheetPortrait(); renderSheet(); showSheetBar(); };
 $("#sClose").onclick = () => { $("#sheetWrap").classList.remove("open"); $("#sheetBar").classList.add("hide"); };
 $("#sMiss").onclick = () => {
   sheetMiss = !sheetMiss;
@@ -1176,164 +1140,185 @@ function showSheetBar(){
   $("#sMiss").classList.toggle("on", sheetMiss);
   $("#sMiss").textContent = sheetMiss ? "未所持を赤く：ON" : "未所持を赤く";
   $("#sGrp").textContent = sheetGrouped ? "全部並べる" : "まとめる";
-  clearTimeout(sheetBarTimer); sheetBarTimer = setTimeout(() => b.classList.add("hide"), 2500);
+  clearTimeout(sheetBarTimer);
+  if (!$("#sheetWrap").classList.contains("portrait")) sheetBarTimer = setTimeout(() => b.classList.add("hide"), 2500);
 }
-function renderSheet(){
+// 表示も保存も同じcanvas描画を使う（横長＝PC、縦長＝スマホの縦画面）
+const sheetPortrait = () => innerHeight > innerWidth;
+let sheetDrawSeq = 0;
+async function renderSheet(){
+  const seq = ++sheetDrawSeq, portrait = sheetPortrait();
+  $("#sheetWrap").classList.toggle("portrait", portrait);
+  if (!$("#sheet").firstChild) $("#sheet").innerHTML = `<p class="empty" style="padding-top:40vh">読み込み中…</p>`;
+  const {cv} = await drawSheetCanvas({portrait, forExport:false});
+  if (seq !== sheetDrawSeq) return;
+  cv.id = "sheetCv"; $("#sheet").replaceChildren(cv);
+  fitSheet();
+}
+/* ---- 画像の読み込み ----
+   表示用：公式の画像をそのまま（速い・保存はできない）
+   保存用：公式画像は外部からの加工が許可されていないため、画像中継サービス wsrv.nl 経由で読み込む */
+const PROXY = u => "https://wsrv.nl/?url=" + encodeURIComponent(u.replace(/^https?:\/\//,"")) + "&w=360";
+const imgCache = {}, viewCache = {};
+function loadCardImg(c, forExport = true){
+  const cache = forExport ? imgCache : viewCache;
+  if (cache[c.id]) return cache[c.id];
+  return cache[c.id] = new Promise(res => {
+    const i = new Image(); if (forExport) i.crossOrigin = "anonymous";
+    const t = setTimeout(() => res(null), 20000);
+    i.onload = () => { clearTimeout(t); res(i); };
+    i.onerror = () => { clearTimeout(t); delete cache[c.id]; res(null); };
+    i.src = (useLocal || !forExport) ? imgSrc(c) : PROXY(window.HB_IMG_BASE + c.img);
+  });
+}
+// カード欄に収まる並べ方：全部並べる＝10×5、まとめる＝枚数に合わせて最大サイズ
+function gridFit(n, GW, GH, grouped){
+  if (!grouped || n === 0) { const gap = 8, w = Math.min((GW - gap*9)/10, ((GH - gap*4)/5)*600/838); return {cols:10, w, h:w*838/600, gap}; }
+  const gap = 12; let best = {w:0, cols:1};
+  for (let cols = 1; cols <= n; cols++){
+    const rows = Math.ceil(n/cols);
+    const w = Math.min((GW - gap*(cols-1))/cols, (GH - gap*(rows-1))/rows*600/838);
+    if (w > best.w) best = {w, cols};
+  }
+  return {cols: best.cols, w: best.w, h: best.w*838/600, gap};
+}
+const FONT = '"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif';
+const SCRIPT_FONT = '"Segoe Script","Brush Script MT","Snell Roundhand",cursive';
+async function drawSheetCanvas({portrait = false, forExport = true} = {}){
+  const S = 1.5, W = portrait ? 1000 : 1600;
+  const AC = "#d9a441", MU = "#a8998a", TX = "#efe6da";
+  const pill = (px, py, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(px,py,w,h,r); else x.rect(px,py,w,h); };
+
+  // ---- データ ----
   const ents = deckEntries(), t = total();
-  // 不足（未所持）の割り当て：同名ごとに後ろのカードから
   const left = {};
   if (sheetMiss) ents.forEach(({c}) => { if (!(c.name in left)) left[c.name] = Math.max(0, sameNameCount(c.name) - ownedName(c.name)); });
   const missOf = ents.map(() => 0);
   for (let i = ents.length-1; i >= 0; i--){ const nm = ents[i].c.name; if (left[nm]) { const k = Math.min(ents[i].n, left[nm]); missOf[i] = k; left[nm] -= k; } }
   const lack = missOf.reduce((a,b)=>a+b,0);
-  const g = sheetGrid(sheetGrouped ? ents.length : DECK_SIZE);
-  let tiles;
-  if (sheetGrouped){
-    const fs = Math.max(13, Math.round(g.w/7));
-    tiles = ents.map(({c,n},i) => `<div class="st ${missOf[i]?"miss":""}"><img src="${imgSrc(c)}" alt=""><span class="sq" style="font-size:${missOf[i]?Math.round(fs*.7):fs}px">×${n}${missOf[i]?`（不足${missOf[i]}）`:""}</span></div>`);
-  } else {
-    tiles = ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => `<div class="st ${j >= n-missOf[i] ? "miss":""}"><img src="${imgSrc(c)}" alt=""></div>`));
-    while (tiles.length < DECK_SIZE) tiles.push(`<div class="st empty"></div>`);
-  }
-  const h = ents.filter(e=>e.c.type==="ホロビト").reduce((s,e)=>s+e.n,0);
+  const h = ents.filter(e=>e.c.type==="ホロビト").reduce((a,e)=>a+e.n,0);
   const col = {}; ents.forEach(({c,n}) => col[c.color] = (col[c.color]||0) + n);
   const bk = [...Array(11)].map(()=>({h:0,w:0}));
   ents.forEach(({c,n}) => { bk[Math.min(c.cost,10)][c.type==="ワザ"?"w":"h"] += n; });
   const peak = Math.max(1, ...bk.map(b=>b.h+b.w));
-  const avg = t ? (ents.reduce((s,e)=>s+e.c.cost*e.n,0)/t).toFixed(2) : "-";
-  $("#sheet").innerHTML = `
-    <div class="frame"></div>
-    <div class="corner" style="left:6px;top:6px"></div><div class="corner" style="right:6px;top:6px"></div>
-    <div class="corner" style="left:6px;bottom:6px"></div><div class="corner" style="right:6px;bottom:6px"></div>
-    <div class="in">
-      <div class="side">
-        <div class="ttl">${esc(deckName)}</div>
-        <div class="sub">HOROBEAT DECK</div>
-        <div class="badges">
-          <span class="bd total ${t===DECK_SIZE?"ok":""}">デッキ ${t}/${DECK_SIZE}</span>
-          <span class="bd h">ホロビト ${h}</span>
-          <span class="bd w">ワザ ${t-h}</span>
-          ${COLORS.filter(k=>col[k]).map(k=>`<span class="bd ${k}">${k} ${col[k]}</span>`).join("")}
-          ${sheetMiss ? `<span class="bd miss">不足 ${lack}</span>` : ""}
-        </div>
-        <div class="hist"><h5><span>コスト分布</span><span>平均 ${avg}</span></h5>
-          <div class="bars">${bk.slice(1).map((b,i)=>`<div class="b"><span class="n">${b.h+b.w||""}</span>
-            <div class="bar w" style="height:${b.w/peak*150}px"></div><div class="bar" style="height:${b.h/peak*150}px;${b.w?"border-radius:0":""}"></div>
-            <span class="l">${i===9?"10+":i+1}</span></div>`).join("")}</div>
-        </div>
-        <div class="credit">Created by ${esc(SHEET_CREDIT)}<small>${new Date().toLocaleDateString("ja-JP")}</small></div>
-      </div>
-      <div class="cards" style="grid-template-columns:repeat(${g.cols},${g.w}px);gap:${g.gap}px;justify-content:center">${tiles.join("")}</div>
-    </div>`;
-  fitSheet();
-}
-/* ---- デッキシートをPNGで保存（canvasに描画） ----
-   公式画像は外部からの加工が許可されていないため、画像中継サービス wsrv.nl 経由で読み込む */
-const PROXY = u => "https://wsrv.nl/?url=" + encodeURIComponent(u.replace(/^https?:\/\//,"")) + "&w=360";
-const imgCache = {};
-function loadCardImg(c){
-  if (imgCache[c.id]) return imgCache[c.id];
-  return imgCache[c.id] = new Promise(res => {
-    const i = new Image(); i.crossOrigin = "anonymous";
-    const t = setTimeout(() => res(null), 20000);
-    i.onload = () => { clearTimeout(t); res(i); };
-    i.onerror = () => { clearTimeout(t); delete imgCache[c.id]; res(null); };
-    i.src = useLocal ? imgSrc(c) : PROXY(window.HB_IMG_BASE + c.img);
-  });
-}
-const FONT = '"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif';
-async function drawSheetCanvas(){
-  const S = 1.5, W = 1600, H = 1000;
-  const cv = document.createElement("canvas"); cv.width = W*S; cv.height = H*S;
-  const x = cv.getContext("2d"); x.scale(S,S);
-  const AC = "#d9a441", MU = "#a8998a", TX = "#efe6da";
-  const pill = (px, py, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(px,py,w,h,r); else x.rect(px,py,w,h); };
-  // 背景
-  x.fillStyle = "#15100c"; x.fillRect(0,0,W,H);
-  let g = x.createRadialGradient(320,0,0,320,0,900); g.addColorStop(0,"rgba(58,42,20,1)"); g.addColorStop(1,"rgba(58,42,20,0)"); x.fillStyle=g; x.fillRect(0,0,W,H);
-  g = x.createRadialGradient(W,H,0,W,H,700); g.addColorStop(0,"rgba(36,23,11,1)"); g.addColorStop(1,"rgba(36,23,11,0)"); x.fillStyle=g; x.fillRect(0,0,W,H);
-  x.strokeStyle = "rgba(217,164,65,.045)"; x.lineWidth = 2;
-  for (let d = -H; d < W; d += 18){ x.beginPath(); x.moveTo(d,H); x.lineTo(d+H,0); x.stroke(); }
-  // 枠
-  x.strokeStyle = AC; x.lineWidth = 4; x.strokeRect(16,16,W-32,H-32);
-  x.strokeStyle = "rgba(217,164,65,.55)"; x.lineWidth = 1; x.strokeRect(24,24,W-48,H-48);
-  [[19,19],[W-19,19],[19,H-19],[W-19,H-19]].forEach(([cx,cy]) => { x.save(); x.translate(cx,cy); x.rotate(Math.PI/4); x.fillStyle="#15100c"; x.fillRect(-13,-13,26,26); x.strokeStyle=AC; x.lineWidth=3; x.strokeRect(-13,-13,26,26); x.restore(); });
-
-  // データ
-  const ents = deckEntries(), t = total();
-  const left = {};
-  if (sheetMiss) ents.forEach(({c}) => { if (!(c.name in left)) left[c.name] = Math.max(0, sameNameCount(c.name) - ownedName(c.name)); });
-  const missOf = ents.map(() => 0);
-  for (let i = ents.length-1; i >= 0; i--){ const nm = ents[i].c.name; if (left[nm]) { const k = Math.min(ents[i].n, left[nm]); missOf[i] = k; left[nm] -= k; } }
-  const lack = missOf.reduce((a,b)=>a+b,0);
-  const tiles = ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => ({c, miss: j >= n-missOf[i]})));
-  const h = ents.filter(e=>e.c.type==="ホロビト").reduce((a,e)=>a+e.n,0);
-  const col = {}; ents.forEach(({c,n}) => col[c.color] = (col[c.color]||0) + n);
-
-  // 左側
-  const LX = 40, LW = 300; let y = 38;
-  x.fillStyle = TX; x.font = `800 34px ${FONT}`; x.textBaseline = "top";
-  let line = "", lines = [];
-  for (const ch of (deckName || "無題")) { if (x.measureText(line+ch).width > LW) { lines.push(line); line = ch; } else line += ch; }
-  lines.push(line);
-  lines.slice(0,3).forEach(l => { x.fillText(l, LX, y); y += 43; });
-  x.fillStyle = AC; x.font = `15px ${FONT}`; x.fillText("H O R O B E A T   D E C K", LX, y + 2); y += 36;
-  // バッジ
+  const avg = t ? (ents.reduce((a,e)=>a+e.c.cost*e.n,0)/t).toFixed(2) : "-";
+  const list = sheetGrouped ? ents.map(({c,n},i) => ({c, n, miss: missOf[i]}))
+                            : ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => ({c, miss: j >= n-missOf[i]})));
+  const imgsP = Promise.all(list.map(tl => loadCardImg(tl.c, forExport)));
   const badges = [
     {t:`デッキ ${t}/${DECK_SIZE}`, bg:"#000", fg: t===DECK_SIZE ? "#fff" : AC, bd: t===DECK_SIZE ? "#6fb36a" : AC},
     {t:`ホロビト ${h}`, bg:"#a8792a"}, {t:`ワザ ${t-h}`, bg:"#4d6d91"},
     ...COLORS.filter(k=>col[k]).map(k=>({t:`${k} ${col[k]}`, bg:{赤:"#d0564a",緑:"#5fa65a",青:"#4a86c8"}[k]})),
     ...(sheetMiss ? [{t:`不足 ${lack}`, bg:"#e0584c"}] : [])
   ];
-  x.font = `700 19px ${FONT}`; let bx = LX;
-  badges.forEach(b => {
-    const w = x.measureText(b.t).width + 32;
-    if (bx + w > LX + LW) { bx = LX; y += 44; }
-    pill(bx, y, w, 36, 18); x.fillStyle = b.bg; x.fill();
-    if (b.bd) { x.strokeStyle = b.bd; x.lineWidth = 2; x.stroke(); }
-    x.fillStyle = b.fg || "#fff"; x.fillText(b.t, bx + 16, y + 8); bx += w + 8;
-  });
-  y += 58;
-  // コスト分布
-  const bk = [...Array(11)].map(()=>({h:0,w:0}));
-  ents.forEach(({c,n}) => { bk[Math.min(c.cost,10)][c.type==="ワザ"?"w":"h"] += n; });
-  const peak = Math.max(1, ...bk.map(b=>b.h+b.w));
-  const avg = t ? (ents.reduce((a,e)=>a+e.c.cost*e.n,0)/t).toFixed(2) : "-";
-  pill(LX, y, LW, 250, 10); x.fillStyle = "rgba(0,0,0,.35)"; x.fill(); x.strokeStyle = "rgba(217,164,65,.3)"; x.lineWidth = 1; x.stroke();
-  x.font = `14px ${FONT}`; x.fillStyle = MU; x.fillText("コスト分布", LX+14, y+14);
-  x.textAlign = "right"; x.fillText(`平均 ${avg}`, LX+LW-14, y+14); x.textAlign = "left";
-  const bw = (LW - 28 - 9*5) / 10, base = y + 215;
-  bk.slice(1).forEach((b,i) => {
-    const bx2 = LX + 14 + i*(bw+5);
-    const hh = b.h/peak*150, ww = b.w/peak*150;
-    if (hh){ const gg = x.createLinearGradient(0,base-ww-hh,0,base-ww); gg.addColorStop(0,"#e6bc63"); gg.addColorStop(1,"#9d6e22"); x.fillStyle = gg; x.fillRect(bx2, base-ww-hh, bw, hh); }
-    if (ww){ const gg = x.createLinearGradient(0,base-ww,0,base); gg.addColorStop(0,"#a6bfd9"); gg.addColorStop(1,"#557ca6"); x.fillStyle = gg; x.fillRect(bx2, base-ww, bw, ww); }
-    x.textAlign = "center";
-    if (b.h+b.w){ x.fillStyle = AC; x.font = `700 14px ${FONT}`; x.fillText(String(b.h+b.w), bx2+bw/2, base-ww-hh-18); }
-    x.fillStyle = MU; x.font = `14px ${FONT}`; x.fillText(i===9 ? "10+" : String(i+1), bx2+bw/2, base+6);
-    x.textAlign = "left";
-  });
-  // クレジット
-  x.fillStyle = AC; x.font = `700 30px "Segoe Script","Brush Script MT","Snell Roundhand",cursive`;
-  x.textBaseline = "alphabetic";
-  x.fillText("Created by", LX, H-110); x.fillText(SHEET_CREDIT, LX, H-74);
-  x.fillStyle = MU; x.font = `14px ${FONT}`; x.fillText(new Date().toLocaleDateString("ja-JP"), LX, H-48);
+  // バッジの並び（折り返し位置）を先に計算
+  const badgeLayout = (ctx, bx0, y, maxW, fs) => {
+    ctx.font = `700 ${fs}px ${FONT}`; let bx = bx0; const bh = fs + 17, pos = [];
+    badges.forEach(b => {
+      const w = ctx.measureText(b.t).width + fs*1.6;
+      if (bx + w > bx0 + maxW) { bx = bx0; y += bh + 8; }
+      pos.push({b, x:bx, y, w, h:bh}); bx += w + 8;
+    });
+    return {pos, bottom: y + bh};
+  };
+  // 縦長は中身に合わせて高さを決める
+  const slots = sheetGrouped ? list.length : DECK_SIZE;
+  let H = 1000, pGrid = null;
+  if (portrait){
+    const mctx = document.createElement("canvas").getContext("2d");
+    const bl = badgeLayout(mctx, 48, 430, W - 96, 22);
+    const GW0 = W - 96;
+    let cols = 10, gap = 8;
+    if (sheetGrouped){ gap = 12; cols = slots <= 3 ? Math.max(slots,1) : slots <= 8 ? 4 : slots <= 15 ? 5 : slots <= 24 ? 6 : 7; }
+    const cw0 = (GW0 - gap*(cols-1)) / cols, ch0 = cw0*838/600, rows = Math.max(1, Math.ceil(slots/cols));
+    const GY = bl.bottom + 30, gridH = rows*ch0 + (rows-1)*gap;
+    pGrid = {cols, w:cw0, h:ch0, gap, GY, gridH};
+    H = Math.round(GY + gridH + 110);
+  }
+  const cv = document.createElement("canvas"); cv.width = W*S; cv.height = H*S;
+  const x = cv.getContext("2d"); x.scale(S,S);
+
+  // ---- 背景と枠 ----
+  x.fillStyle = "#15100c"; x.fillRect(0,0,W,H);
+  let g = x.createRadialGradient(W*.2,0,0,W*.2,0,900); g.addColorStop(0,"rgba(58,42,20,1)"); g.addColorStop(1,"rgba(58,42,20,0)"); x.fillStyle=g; x.fillRect(0,0,W,H);
+  g = x.createRadialGradient(W,H,0,W,H,700); g.addColorStop(0,"rgba(36,23,11,1)"); g.addColorStop(1,"rgba(36,23,11,0)"); x.fillStyle=g; x.fillRect(0,0,W,H);
+  x.strokeStyle = "rgba(217,164,65,.045)"; x.lineWidth = 2;
+  for (let d = -H; d < W; d += 18){ x.beginPath(); x.moveTo(d,H); x.lineTo(d+H,0); x.stroke(); }
+  x.strokeStyle = AC; x.lineWidth = 4; x.strokeRect(16,16,W-32,H-32);
+  x.strokeStyle = "rgba(217,164,65,.55)"; x.lineWidth = 1; x.strokeRect(24,24,W-48,H-48);
+  [[19,19],[W-19,19],[19,H-19],[W-19,H-19]].forEach(([cx,cy]) => { x.save(); x.translate(cx,cy); x.rotate(Math.PI/4); x.fillStyle="#15100c"; x.fillRect(-13,-13,26,26); x.strokeStyle=AC; x.lineWidth=3; x.strokeRect(-13,-13,26,26); x.restore(); });
   x.textBaseline = "top";
 
-  // カード
-  // まとめる表示：1種類1枚＋枚数バッジ
-  const list = sheetGrouped ? ents.map(({c,n},i) => ({c, n, miss: missOf[i]})) : tiles;
-  const slots = sheetGrouped ? list.length : DECK_SIZE;
-  const gd = sheetGrid(slots), cw = gd.w, ch = gd.h, gap = gd.gap, cols = gd.cols;
-  const GX0 = LX + LW + 34, GW = W - 40 - GX0;
-  const GX = GX0 + (GW - (cols*cw + gap*(cols-1))) / 2;
+  // ---- 部品 ----
+  const drawBadges = (bx0, y, maxW, fs) => {
+    const bl = badgeLayout(x, bx0, y, maxW, fs);
+    bl.pos.forEach(({b, x:bx, y:by, w, h:bh}) => {
+      pill(bx, by, w, bh, bh/2); x.fillStyle = b.bg; x.fill();
+      if (b.bd) { x.strokeStyle = b.bd; x.lineWidth = 2; x.stroke(); }
+      x.font = `700 ${fs}px ${FONT}`; x.fillStyle = b.fg || "#fff"; x.fillText(b.t, bx + fs*.8, by + 8.5);
+    });
+    return bl.bottom;
+  };
+  const drawHist = (hx, hy, hw, hh) => {
+    pill(hx, hy, hw, hh, 10); x.fillStyle = "rgba(0,0,0,.35)"; x.fill(); x.strokeStyle = "rgba(217,164,65,.3)"; x.lineWidth = 1; x.stroke();
+    const fs = portrait ? 18 : 14;
+    x.font = `${fs}px ${FONT}`; x.fillStyle = MU; x.fillText("コスト分布", hx+14, hy+14);
+    x.textAlign = "right"; x.fillText(`平均 ${avg}`, hx+hw-14, hy+14); x.textAlign = "left";
+    const gapB = portrait ? 14 : 5, bw = (hw - 28 - 9*gapB) / 10, base = hy + hh - fs - 22, maxH = hh - fs*3 - 50;
+    bk.slice(1).forEach((b,i) => {
+      const bx2 = hx + 14 + i*(bw+gapB);
+      const hh2 = b.h/peak*maxH, ww = b.w/peak*maxH;
+      if (hh2){ const gg = x.createLinearGradient(0,base-ww-hh2,0,base-ww); gg.addColorStop(0,"#e6bc63"); gg.addColorStop(1,"#9d6e22"); x.fillStyle = gg; x.fillRect(bx2, base-ww-hh2, bw, hh2); }
+      if (ww){ const gg = x.createLinearGradient(0,base-ww,0,base); gg.addColorStop(0,"#a6bfd9"); gg.addColorStop(1,"#557ca6"); x.fillStyle = gg; x.fillRect(bx2, base-ww, bw, ww); }
+      x.textAlign = "center";
+      if (b.h+b.w){ x.fillStyle = AC; x.font = `700 ${fs}px ${FONT}`; x.fillText(String(b.h+b.w), bx2+bw/2, base-ww-hh2-fs-4); }
+      x.fillStyle = MU; x.font = `${fs}px ${FONT}`; x.fillText(i===9 ? "10+" : String(i+1), bx2+bw/2, base+6);
+      x.textAlign = "left";
+    });
+    x.strokeStyle = "rgba(217,164,65,.35)"; x.beginPath(); x.moveTo(hx+10, base+.5); x.lineTo(hx+hw-10, base+.5); x.stroke();
+  };
+  const fitText = (str, maxW) => { if (x.measureText(str).width <= maxW) return str; let s2 = str; while (s2 && x.measureText(s2+"…").width > maxW) s2 = s2.slice(0,-1); return s2 + "…"; };
+
+  // ---- レイアウト ----
+  let GX0, GY0, GW, GH;
+  if (portrait){
+    const LX = 48, CW = W - 96;
+    x.fillStyle = TX; x.font = `800 46px ${FONT}`; x.fillText(fitText(deckName || "無題", CW), LX, 50);
+    x.fillStyle = AC; x.font = `16px ${FONT}`; x.fillText("H O R O B E A T   D E C K", LX, 108);
+    drawHist(LX, 146, CW, 260);
+    drawBadges(LX, 430, CW, 22);
+    GX0 = LX; GY0 = pGrid.GY; GW = CW; GH = pGrid.gridH;
+    x.fillStyle = AC; x.font = `700 30px ${SCRIPT_FONT}`; x.textBaseline = "alphabetic";
+    x.fillText(`Created by ${SHEET_CREDIT}`, LX, H - 46);
+    x.fillStyle = MU; x.font = `16px ${FONT}`; x.textAlign = "right"; x.fillText(new Date().toLocaleDateString("ja-JP"), W - LX, H - 48); x.textAlign = "left";
+    x.textBaseline = "top";
+  } else {
+    const LX = 40, LW = 300; let y = 38;
+    x.fillStyle = TX; x.font = `800 34px ${FONT}`;
+    let line = "", lines = [];
+    for (const ch of (deckName || "無題")) { if (x.measureText(line+ch).width > LW) { lines.push(line); line = ch; } else line += ch; }
+    lines.push(line);
+    lines.slice(0,3).forEach(l => { x.fillText(l, LX, y); y += 43; });
+    x.fillStyle = AC; x.font = `15px ${FONT}`; x.fillText("H O R O B E A T   D E C K", LX, y + 2); y += 36;
+    y = drawBadges(LX, y, LW, 19) + 22;
+    drawHist(LX, y, LW, 250);
+    x.fillStyle = AC; x.font = `700 30px ${SCRIPT_FONT}`; x.textBaseline = "alphabetic";
+    x.fillText("Created by", LX, H-110); x.fillText(SHEET_CREDIT, LX, H-74);
+    x.fillStyle = MU; x.font = `14px ${FONT}`; x.fillText(new Date().toLocaleDateString("ja-JP"), LX, H-48);
+    x.textBaseline = "top";
+    GX0 = LX + LW + 34; GY0 = 38; GW = W - 40 - GX0; GH = H - 76;
+  }
+
+  // ---- カード ----
+  const gd = portrait ? pGrid : gridFit(slots, GW, GH, sheetGrouped), cw = gd.w, ch = gd.h, gap = gd.gap, cols = gd.cols;
   const rows = Math.ceil(slots / cols);
-  const gy = 38 + (H - 76 - (ch*rows + gap*(rows-1))) / 2;
-  const imgs = await Promise.all(list.map(tl => loadCardImg(tl.c)));
+  const GX = GX0 + (GW - (cols*cw + gap*(cols-1))) / 2;
+  const gy = GY0 + (GH - (ch*rows + gap*(rows-1))) / 2;
+  const imgs = await imgsP;
   let failed = 0;
   for (let k = 0; k < slots; k++){
     const cx = GX + (k%cols)*(cw+gap), cy = gy + Math.floor(k/cols)*(ch+gap);
-    x.save(); pill(cx, cy, cw, ch, 6); x.clip();
+    x.save(); pill(cx, cy, cw, ch, Math.min(6, cw/14)); x.clip();
     if (k < list.length){
       if (imgs[k]) x.drawImage(imgs[k], cx, cy, cw, ch);
       else { failed++; x.fillStyle = "#2a231f"; x.fillRect(cx,cy,cw,ch); x.fillStyle = TX; x.font = `12px ${FONT}`; x.fillText(list[k].c.name.slice(0,7), cx+6, cy+8); }
@@ -1358,7 +1343,8 @@ $("#sSave").onclick = async e => {
   const btn = $("#sSave"); if (btn.disabled) return;
   btn.disabled = true; btn.textContent = "作成中…"; clearTimeout(sheetBarTimer);
   try {
-    const {cv, failed} = await drawSheetCanvas();
+    // 保存する画像は、スマホでもPCと同じ横長レイアウト
+    const {cv, failed} = await drawSheetCanvas({portrait: false, forExport: true});
     const blob = await new Promise(r => cv.toBlob(r, "image/png"));
     const fname = `${(deckName||"deck").replace(/[\\/:*?"<>|]/g,"_")}.png`;
     const file = new File([blob], fname, {type:"image/png"});
@@ -1379,11 +1365,24 @@ function downloadBlob(blob, name){
 
 function fitSheet(){
   if (!$("#sheetWrap").classList.contains("open")) return;
-  const W = innerWidth, H = innerHeight, portrait = H > W;
-  const sc = portrait ? Math.min(W/1000, H/1600) : Math.min(W/1600, H/1000);
-  $("#sheet").style.transform = `translate(-50%,-50%) ${portrait ? "rotate(90deg)" : ""} scale(${sc})`;
+  const cv = $("#sheetCv"); if (!cv) return;
+  const W = innerWidth, H = innerHeight, portrait = $("#sheetWrap").classList.contains("portrait");
+  const cw = cv.width, chh = cv.height;
+  // 縦長：下にボタン欄（約120px）を空ける／横長：画面いっぱい
+  const availH = portrait ? H - 130 : H, availW = portrait ? W - 16 : W;
+  const sc = Math.min(availW/cw, availH/chh);
+  cv.style.width = cw*sc + "px"; cv.style.height = chh*sc + "px";
+  // 縦長：ボタンをシートのすぐ下に置く
+  const bar = $("#sheetBar");
+  if (portrait){ bar.style.top = (8 + chh*sc + 14) + "px"; bar.style.bottom = "auto"; }
+  else { bar.style.top = ""; bar.style.bottom = ""; }
 }
-window.addEventListener("resize", fitSheet);
+let lastPortrait = null;
+window.addEventListener("resize", () => {
+  if (!$("#sheetWrap").classList.contains("open")) return;
+  if (sheetPortrait() !== lastPortrait) { lastPortrait = sheetPortrait(); renderSheet(); } else fitSheet();
+});
+
 
 /* ---------- 試しに引く ---------- */
 $("#bDraw").onclick = () => drawSim(5);
