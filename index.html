@@ -218,6 +218,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 #sheetBar.hide{opacity:0;pointer-events:none}
 #sheetBar.hide > *{pointer-events:none}
 /* 縦長（スマホ）：ボタンはシートの下に常に表示 */
+#sheetWrap:not(.open) + #sheetBar{display:none !important}
 #sheetWrap.portrait + #sheetBar{top:auto;bottom:calc(12px + env(safe-area-inset-bottom));justify-content:center;opacity:1}
 #sheetWrap.portrait + #sheetBar > *{pointer-events:auto}
 #sheetWrap.portrait + #sheetBar .hint{display:none}
@@ -1128,7 +1129,7 @@ let sheetGrouped = matchMedia("(max-width:900px)").matches; // スマホは最�
 $("#sGrp").onclick = e => { e.stopPropagation(); sheetGrouped = !sheetGrouped; renderSheet(); showSheetBar(); };
 
 $("#bSheet").onclick = () => { $("#sheetWrap").classList.add("open"); $("#sheet").replaceChildren(); lastPortrait = sheetPortrait(); renderSheet(); showSheetBar(); };
-$("#sClose").onclick = () => { $("#sheetWrap").classList.remove("open"); $("#sheetBar").classList.add("hide"); };
+$("#sClose").onclick = () => { $("#sheetWrap").classList.remove("open","portrait"); $("#sheetBar").classList.add("hide"); };
 $("#sMiss").onclick = () => {
   sheetMiss = !sheetMiss;
   if (sheetMiss && !Object.keys(owned).length) toast("所持カードが未登録です");
