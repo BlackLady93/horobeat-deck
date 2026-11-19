@@ -152,7 +152,7 @@ body.m-coll .right{display:none}
 body.m-coll .app{grid-template-columns:1fr}
 /* ---- ホーム（デッキ一覧） ---- */
 #home{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
-#home .hbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+#home .hbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 #home h2{margin:0;font-size:20px;flex:1}
 .hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 .htile{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
@@ -205,6 +205,35 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 .vt.miss .vq{background:#e0584c;color:#fff}
 .btn.on{border-color:#e0584c;color:#ffb3aa}
 .savest{font-size:11px;color:var(--muted)}
+/* ---- QRで送る・受け取る ---- */
+.qr h2{margin:0 0 4px;font-size:19px;padding-right:30px}
+.qr .lead{color:var(--muted);font-size:12px;margin:0 0 12px;line-height:1.6}
+.qsel{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow:auto;margin-bottom:10px}
+.qsel label{display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer}
+.qsel label.dis{opacity:.45;cursor:not-allowed}
+.qsel label small{color:var(--muted);margin-left:auto;font-size:11px;white-space:nowrap}
+.qopt{display:flex;gap:10px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.qmeter{margin:10px 0}
+.qmeter .t{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px}
+.qmeter .bar{height:10px;border-radius:5px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+.qmeter .bar i{display:block;height:100%;background:var(--ok);transition:width .2s}
+.qmeter.over .bar i{background:var(--danger)} .qmeter.over .t b{color:var(--danger)}
+.qmsg{color:var(--danger);font-size:12px;min-height:1em;margin:4px 0 8px}
+.qact{display:flex;gap:8px;flex-wrap:wrap}
+.qact .btn{flex:1;padding:10px;font-size:15px}
+.qcode{display:flex;flex-direction:column;align-items:center;gap:8px}
+.qcode .box{background:#fff;padding:12px;border-radius:10px;line-height:0}
+.qcode .box svg,.qcode .box img{width:min(78vw,360px);height:auto;display:block}
+.qcam{position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:4/3;max-height:52vh;margin:0 auto;width:100%}
+.qcam video{width:100%;height:100%;object-fit:cover;display:block}
+.qcam .frame{position:absolute;inset:18% 22%;border:3px solid var(--accent);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.qcam .st{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#fff;font-size:12px}
+.qres{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.qres .r{display:flex;gap:10px;align-items:center;background:var(--panel2);border-radius:8px;padding:8px 10px}
+.qres .tag{font-size:12px;font-weight:700;border-radius:4px;padding:1px 6px;white-space:nowrap}
+.qres .tag.add{background:#1e3a1d;color:#a9e3a4} .qres .tag.up{background:#4a3a14;color:#ffd98a}
+.qres .r small{color:var(--muted);margin-left:auto;font-size:11px;white-space:nowrap}
+.qr textarea{height:90px;font-size:12px;word-break:break-all}
 .savest.ok{color:var(--ok)}
 /* ---- デッキシート（スクショ用） ---- */
 #sheetWrap{position:fixed;inset:0;z-index:80;background:#050403;display:none;overflow:hidden}
@@ -296,7 +325,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.6</span>
+  <span class="ver">v1.7</span>
 </header>
 <section id="eventPane">
   <h2>イベント検索</h2>
@@ -318,7 +347,9 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   </div>
 </section>
 <section id="home">
-  <div class="hbar"><h2>デッキ一覧</h2><button class="btn pri" id="hNew">＋ 新規</button></div>
+  <div class="hbar"><h2>デッキ一覧</h2>
+    <button class="btn" id="hQrSend">QRで送る</button><button class="btn" id="hQrRecv">QRで受け取る</button>
+    <button class="btn pri" id="hNew">＋ 新規</button></div>
   <div class="hfilter" id="hFilter"><span class="t">色で絞り込み</span><span class="cnt" id="hCnt"></span></div>
   <div id="homeList"></div>
 </section>
@@ -347,6 +378,8 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
       <label class="coll-only"><input type="checkbox" id="lack"> 4枚未満のカードだけ</label>
       <span class="coll-only" id="ownSum"></span>
       <button class="btn coll-only" id="bCollIO">書き出し/読込</button>
+      <button class="btn coll-only" id="cQrSend">QRで送る</button>
+      <button class="btn coll-only" id="cQrRecv">QRで受け取る</button>
       <span class="sp">並び順
         <select id="sort">
           <option value="no">カード番号</option>
@@ -520,6 +553,7 @@ function renderHome(){
   $("#hFilter").style.display = allItems.length ? "" : "none";
   $("#hCnt").textContent = homeColors.size ? `${items.length} / ${allItems.length}件` : "";
   $("#hNew").style.display = allItems.length ? "" : "none";
+  $("#hQrSend").style.display = allItems.length ? "" : "none";
   const el = $("#homeList");
   if (allItems.length && !items.length){ el.innerHTML = `<p class="empty">選んだ色のデッキはありません</p>`; return; }
   if (!items.length){
@@ -740,8 +774,9 @@ function renderStats(ents){
 }
 
 /* ---------- 詳細モーダル ---------- */
-function openModal(html, wide=false){ $("#mbody").innerHTML = html; document.querySelector(".mbox").classList.toggle("wide", wide); $("#modal").classList.add("open"); }
-function closeModal(){ $("#modal").classList.remove("open"); }
+function openModal(html, wide=false){ if (onModalClose) { const f = onModalClose; onModalClose = null; f(); } $("#mbody").innerHTML = html; document.querySelector(".mbox").classList.toggle("wide", wide); $("#modal").classList.add("open"); }
+let onModalClose = null;
+function closeModal(){ $("#modal").classList.remove("open"); if (onModalClose) { const f = onModalClose; onModalClose = null; f(); } }
 $("#mx").onclick = closeModal;
 $("#modal").onclick = e => { if (e.target.id==="modal") closeModal(); };
 document.addEventListener("keydown", e => { if (e.key==="Escape") closeModal(); });
@@ -951,6 +986,230 @@ function fitDeckView(){
   g.querySelectorAll(".vq").forEach(q => { q.style.fontSize = Math.max(11, Math.round(q.textContent.length > 3 ? w/12 : w/8)) + "px"; q.style.whiteSpace = "nowrap"; });
 }
 window.addEventListener("resize", () => { if ($(".mbox").classList.contains("wide") && $("#modal").classList.contains("open")) fitDeckView(); });
+
+/* ---------- QRで送る・受け取る ----------
+   データ → JSON → 圧縮(deflate) → Base45（QRの英数字モードで効率よく入る文字）→ 「HBQ1:」を付けてQRに
+   QRの作成：qrcode-generator、読み取り：jsQR（どちらも使うときだけ読み込む） */
+const QR_PREFIX = "HBQ1:";
+const QR_MAX = 1200;   // 画面のQRをカメラで安定して読める目安（英数字の文字数・読み取りテスト済みの範囲）
+const QR_LIBS = window.QR_LIB_URLS || {
+  gen: "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js",
+  scan: "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js",
+};
+const libLoaded = {};
+function loadLib(url){
+  return libLoaded[url] ||= new Promise((ok, ng) => { const sc = document.createElement("script"); sc.src = url; sc.onload = ok; sc.onerror = () => { delete libLoaded[url]; ng(new Error("load")); }; document.head.appendChild(sc); });
+}
+// カード→枚数 を短い文字に（所持カードの短縮形式と同じ書き方）
+function encodeCardMap(map){
+  const seg = {};
+  CARDS.forEach(c => { const n = map[c.id]; if (!n) return; const k = cardCode(c); if (!k) return; (seg[k[0]] ||= []).push(k[1] + (n>1 ? "*"+n : "")); });
+  return Object.entries(seg).map(([sr,es]) => sr + ":" + es.join(",")).join("/");
+}
+function decodeCardMap(str){ return decodeOwned("HB:" + (str||"")).no; }
+// Base45（RFC 9285）
+const B45 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+function b45enc(bytes){
+  let out = "";
+  for (let i = 0; i < bytes.length; i += 2){
+    if (i+1 < bytes.length){ let v = bytes[i]*256 + bytes[i+1]; const c = v % 45; v = (v - c)/45; const d = v % 45; const e = (v - d)/45; out += B45[c] + B45[d] + B45[e]; }
+    else { const v = bytes[i]; out += B45[v % 45] + B45[Math.floor(v/45)]; }
+  }
+  return out;
+}
+function b45dec(str){
+  const out = [];
+  for (let i = 0; i < str.length; i += 3){
+    const c = B45.indexOf(str[i]), d = B45.indexOf(str[i+1]), e = i+2 < str.length ? B45.indexOf(str[i+2]) : -1;
+    if (c < 0 || d < 0 || (i+2 < str.length && e < 0)) throw new Error("b45");
+    if (e >= 0){ const v = c + d*45 + e*2025; out.push(v >> 8, v & 255); } else out.push(c + d*45);
+  }
+  return new Uint8Array(out);
+}
+async function zip(bytes, dir){
+  const cs = dir === "c" ? new CompressionStream("deflate-raw") : new DecompressionStream("deflate-raw");
+  const res = new Response(new Blob([bytes]).stream().pipeThrough(cs));
+  return new Uint8Array(await res.arrayBuffer());
+}
+const canZip = typeof CompressionStream !== "undefined";
+async function packPayload(obj){
+  let bytes = new TextEncoder().encode(JSON.stringify(obj));
+  let flag = "0";
+  if (canZip){ const z = await zip(bytes, "c"); if (z.length < bytes.length){ bytes = z; flag = "Z"; } }
+  return QR_PREFIX + flag + b45enc(bytes);
+}
+async function unpackPayload(text){
+  text = (text||"").trim();
+  const i = text.indexOf(QR_PREFIX); if (i < 0) throw new Error("prefix");
+  const body = text.slice(i + QR_PREFIX.length).replace(/\s+$/,"");
+  const flag = body[0]; let bytes = b45dec(body.slice(1));
+  if (flag === "Z") bytes = await zip(bytes, "d");
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+// 送るデータを作る
+function buildPayload({deckKeys = [], withRecs = false, withOwned = false}){
+  const all = loadAll(), recs = loadRecs(), o = {v:1};
+  if (deckKeys.length) o.d = deckKeys.filter(k=>all[k]).map(k => ({k, n: all[k].name, u: Date.parse(all[k].updated)||0, c: encodeCardMap(all[k].deck)}));
+  if (withRecs && deckKeys.length){
+    o.r = {};
+    deckKeys.forEach(k => { const l = recs[k]; if (l && l.length) o.r[k] = l.map(r => [r.id, Date.parse(r.at)||0, r.res, r.turn||"", (r.opp||[]).join(""), r.oppName||"", r.memo||""]); });
+  }
+  if (withOwned) o.o = encodeCardMap(owned);
+  return o;
+}
+
+// ---- 送る：デッキ選択 ----
+let qrSel = new Set();
+$("#hQrSend").onclick = () => showQrSendDecks();
+$("#cQrSend").onclick = () => sendQr({withOwned:true}, "所持カード");
+function showQrSendDecks(){
+  const all = loadAll();
+  const items = Object.entries(all).sort((a,b)=>b[1].updated.localeCompare(a[1].updated));
+  if (!items.length) return toast("送れるデッキがありません");
+  qrSel = new Set([...qrSel].filter(k => all[k]));
+  openModal(`<div class="qr"><h2>QRで送る：デッキを選ぶ</h2>
+    <p class="lead">選んだデッキをQRコードにします。受け取った側では、同じデッキは上書き、ないデッキは追加されます。</p>
+    <div class="qopt"><button class="btn" id="qAll">すべて選択</button><button class="btn" id="qNone">選択を解除</button></div>
+    <div class="qsel">${items.map(([k,d]) => {
+      const n = Object.values(d.deck).reduce((a,b)=>a+b,0);
+      return `<label data-k="${k}"><input type="checkbox" ${qrSel.has(k)?"checked":""}><span>${esc(d.name)}</span><small>${n}枚</small></label>`; }).join("")}</div>
+    <div class="qmeter" id="qMeter"><div class="t"><span>QRコードの容量</span><b id="qMeterT">-</b></div><div class="bar"><i id="qMeterB" style="width:0"></i></div></div>
+    <div class="qmsg" id="qMsg"></div>
+    <div class="qact"><button class="btn pri" id="qGo">送る</button></div></div>`);
+  const sizeOf = async keys => (await packPayload(buildPayload({deckKeys: keys}))).length;
+  let seq = 0;
+  const update = async () => {
+    const my = ++seq, keys = [...qrSel];
+    const len = keys.length ? await sizeOf(keys) : 0;
+    if (my !== seq) return;
+    const over = len > QR_MAX;
+    $("#qMeter").classList.toggle("over", over);
+    $("#qMeterT").textContent = `${Math.round(len/QR_MAX*100)}%`;
+    $("#qMeterB").style.width = Math.min(100, len/QR_MAX*100) + "%";
+    $("#qMsg").textContent = over ? "容量を超えています。デッキを減らしてください" : "";
+    $("#qGo").disabled = over || !keys.length;
+    $("#qGo").textContent = keys.length ? `${keys.length}個を送る` : "デッキを選んでください";
+    // まだ選んでいないデッキで、足すと容量を超えるものは選べなくする
+    for (const lb of document.querySelectorAll(".qsel label")){
+      const k = lb.dataset.k; if (qrSel.has(k)) { lb.classList.remove("dis"); lb.querySelector("input").disabled = false; continue; }
+      const l2 = await sizeOf([...keys, k]); if (my !== seq) return;
+      const dis = l2 > QR_MAX; lb.classList.toggle("dis", dis); lb.querySelector("input").disabled = dis;
+      lb.querySelector("small").dataset.full = dis ? "1" : "";
+    }
+  };
+  document.querySelectorAll(".qsel label input").forEach(cb => cb.onchange = () => { const k = cb.closest("label").dataset.k; cb.checked ? qrSel.add(k) : qrSel.delete(k); update(); });
+  $("#qAll").onclick = async () => {
+    // 容量に収まるところまで新しい順に選ぶ
+    qrSel.clear();
+    for (const [k] of items){ qrSel.add(k); if (await sizeOf([...qrSel]) > QR_MAX) { qrSel.delete(k); } }
+    document.querySelectorAll(".qsel label").forEach(lb => lb.querySelector("input").checked = qrSel.has(lb.dataset.k));
+    update();
+  };
+  $("#qNone").onclick = () => { qrSel.clear(); document.querySelectorAll(".qsel label input").forEach(i => i.checked = false); update(); };
+  $("#qGo").onclick = () => { if (!$("#qGo").disabled) sendQr({deckKeys:[...qrSel]}, `デッキ${qrSel.size}個`); };
+  update();
+}
+// ---- 送る：QRを表示 ----
+async function sendQr(opts, label){
+  const text = await packPayload(buildPayload(opts));
+  if (text.length > QR_MAX) return toast("データが大きすぎてQRコードにできません");
+  openModal(`<div class="qr"><h2>QRで送る</h2><div class="qcode"><div class="box" id="qBox"><p style="line-height:1.5;color:#333;padding:40px">QRコードを作成中…</p></div>
+    <div>${esc(label)}・${text.length}文字</div>
+    <div class="lead" style="text-align:center;margin:0">受け取る側で「QRで受け取る」を開いて、カメラで読み取ってください</div>
+    <div class="qact" style="width:100%"><button class="btn" id="qCopy">テキストでコピー</button><button class="btn" id="qClose">閉じる</button></div></div></div>`);
+  $("#qClose").onclick = closeModal;
+  $("#qCopy").onclick = async () => { try { await navigator.clipboard.writeText(text); toast("コピーしました。受け取る側で貼り付けてください"); } catch { toast("コピーできませんでした"); } };
+  try {
+    await loadLib(QR_LIBS.gen);
+    const qr = window.qrcode(0, "L"); qr.addData(text, "Alphanumeric"); qr.make();
+    $("#qBox").innerHTML = qr.createSvgTag({cellSize: 4, margin: 2, scalable: true}).replace("<svg ", '<svg shape-rendering="crispEdges" ');
+  } catch (e) {
+    $("#qBox").innerHTML = `<p style="line-height:1.5;color:#a00;padding:30px">QRコードを作れませんでした。<br>「テキストでコピー」を使ってください。</p>`;
+  }
+}
+
+// ---- 受け取る ----
+let scanStream = null, scanTimer = null;
+function stopScan(){
+  if (scanTimer) { cancelAnimationFrame(scanTimer); scanTimer = null; }
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+}
+$("#hQrRecv").onclick = () => showQrRecv();
+$("#cQrRecv").onclick = () => showQrRecv();
+function showQrRecv(){
+  openModal(`<div class="qr"><h2>QRで受け取る</h2>
+    <div class="qcam"><video id="qVid" playsinline muted></video><div class="frame"></div><div class="st" id="qSt">カメラを起動中…</div></div>
+    <p class="lead" style="margin-top:10px">送る側に表示したQRコードを、枠に合わせて映してください。カメラが使えないときは、送る側の「テキストでコピー」の内容をここに貼り付けてください。</p>
+    <textarea id="qPaste" placeholder="HBQ1:…"></textarea>
+    <div class="qact" style="margin-top:8px"><button class="btn" id="qPasteGo">貼り付けた内容を読み込む</button></div></div>`);
+  onModalClose = stopScan;
+  $("#qPasteGo").onclick = () => handleReceived($("#qPaste").value);
+  startScan();
+}
+async function startScan(){
+  const st = $("#qSt"), vid = $("#qVid");
+  try {
+    await loadLib(QR_LIBS.scan);
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error("nocam");
+    scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment", width:{ideal:1280}, height:{ideal:960}}, audio:false});
+    if (!$("#modal").classList.contains("open") || !document.body.contains(vid)) return stopScan();
+    vid.srcObject = scanStream; await vid.play();
+    st.textContent = "読み取り中…";
+    const cv = document.createElement("canvas"), cx = cv.getContext("2d", {willReadFrequently:true});
+    const tick = () => {
+      if (!scanStream) return;
+      if (vid.readyState >= 2 && vid.videoWidth){
+        const w = Math.min(960, vid.videoWidth), h = Math.round(vid.videoHeight * w / vid.videoWidth);
+        cv.width = w; cv.height = h; cx.drawImage(vid, 0, 0, w, h);
+        const code = window.jsQR(cx.getImageData(0,0,w,h).data, w, h, {inversionAttempts:"dontInvert"});
+        if (code && code.data && code.data.includes(QR_PREFIX)) { stopScan(); navigator.vibrate && navigator.vibrate(40); handleReceived(code.data); return; }
+      }
+      scanTimer = requestAnimationFrame(tick);
+    };
+    tick();
+  } catch (e) {
+    stopScan();
+    if (st) st.textContent = "カメラを使えません（下の貼り付けを使ってください）";
+  }
+}
+async function handleReceived(text){
+  let o;
+  try { o = await unpackPayload(text); if (!o || o.v !== 1) throw 0; }
+  catch { return toast("読み込めませんでした。このサイトのQRコードか確認してください"); }
+  stopScan();
+  const all = loadAll(), recs = loadRecs();
+  const decks = (o.d||[]).map(d => ({...d, deck: decodeCardMap(d.c), exists: !!all[d.k]}));
+  const recCount = o.r ? Object.values(o.r).reduce((a,l)=>a+l.length,0) : 0;
+  const ownedIn = o.o != null ? decodeCardMap(o.o) : null;
+  const ownedKinds = ownedIn ? Object.keys(ownedIn).length : 0;
+  openModal(`<div class="qr"><h2>受け取った内容</h2>
+    <div class="qres">
+      ${decks.map(d => { const n = Object.values(d.deck).reduce((a,b)=>a+b,0), rc = o.r && o.r[d.k] ? o.r[d.k].length : 0;
+        return `<div class="r"><span class="tag ${d.exists?"up":"add"}">${d.exists?"上書き":"追加"}</span><span>${esc(d.n)}</span><small>${n}枚${rc?`・記録${rc}件`:""}</small></div>`; }).join("")}
+      ${ownedIn ? `<div class="r"><span class="tag up">上書き</span><span>所持カード</span><small>${ownedKinds}種</small></div>` : ""}
+    </div>
+    <p class="lead">${decks.length ? "同じデッキは受け取った内容で上書きし、ないデッキは追加します。" : ""}${recCount ? "対戦記録は今ある記録に足し合わせます（同じ記録は1件にまとめます）。" : ""}${ownedIn ? "所持カードは受け取った内容に置き換わります。" : ""}</p>
+    <div class="qact"><button class="btn pri" id="qImp">取り込む</button><button class="btn" id="qCancel">やめる</button></div></div>`);
+  $("#qCancel").onclick = closeModal;
+  $("#qImp").onclick = () => {
+    const all2 = loadAll(), recs2 = loadRecs();
+    decks.forEach(d => { all2[d.k] = { name: d.n || "無題", deck: d.deck, updated: new Date(d.u || Date.now()).toISOString() }; });
+    saveAll(all2);
+    if (o.r){
+      Object.entries(o.r).forEach(([k, l]) => {
+        const cur = recs2[k] || [], ids = new Map(cur.map(r => [r.id, r]));
+        l.forEach(([id, at, res, turn, opp, oppName, memo]) => ids.set(id, {id, at: new Date(at).toISOString(), res, turn, opp: [...(opp||"")], oppName, memo}));
+        recs2[k] = [...ids.values()];
+      });
+      saveRecs(recs2);
+    }
+    if (ownedIn){ owned = ownedIn; saveOwned(); }
+    closeModal();
+    if (decks.some(d => d.k === editingKey) && mode === "build") openDeck(editingKey);
+    else if (mode === "home") renderHome(); else if (mode === "coll") renderGrid();
+    toast("取り込みました");
+  };
+}
 
 /* ---------- イベント検索（公式の公認イベント検索を条件付きで開く） ---------- */
 const EV_URL = "https://horobeat-event.jp/";
