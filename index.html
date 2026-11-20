@@ -235,6 +235,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 .qres .r small{color:var(--muted);margin-left:auto;font-size:11px;white-space:nowrap}
 .qr textarea{height:90px;font-size:12px;word-break:break-all}
 .savest.ok{color:var(--ok)}
+.savest.warn{color:var(--accent)}
 /* ---- デッキシート（スクショ用） ---- */
 #sheetWrap{position:fixed;inset:0;z-index:80;background:#050403;display:none;overflow:hidden}
 #sheetWrap.open{display:block}
@@ -325,7 +326,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.7</span>
+  <span class="ver">v1.7.1</span>
 </header>
 <section id="eventPane">
   <h2>イベント検索</h2>
@@ -395,7 +396,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   <aside class="right">
     <div class="dhead">
       <div class="row">
-        <input class="dname" id="dname" value="新しいデッキ" title="デッキ名（変更は自動保存）">
+        <input class="dname" id="dname" value="新しいデッキ" title="デッキ名">
         <div class="count" id="count">0/50</div>
       </div>
       <div class="savest" id="saveSt">まだ保存されていません</div>
@@ -496,25 +497,30 @@ function remove(id){
   }
   if (--deck[id] <= 0) delete deck[id]; changed();
 }
-function changed(){ renderDeck(); renderGridBadges(); autoSave(); }
-// 自動保存：1枚でも入れたら一覧に保存される
-function autoSave(force=false){
-  if (!force && !editingKey && total() === 0) return;
+function changed(){ renderDeck(); renderGridBadges(); markDirty(); }
+// 保存は「保存」ボタンを押したときだけ。保存していない変更があるかを dirty で持つ
+let dirty = false, savedAt = null;
+function markDirty(){ dirty = true; setSaveSt(savedAt); }
+function autoSave(){
   const all = loadAll();
   if (!editingKey) editingKey = "d" + Date.now();
   const now = new Date();
   all[editingKey] = { name: deckName || "無題", deck: {...deck}, updated: now.toISOString() };
   saveAll(all);
+  dirty = false; savedAt = now;
   setSaveSt(now);
 }
 function setSaveSt(d){
   const el = $("#saveSt"); if (!el) return;
-  el.textContent = d ? `✓ 保存済み（${d.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}）・変更は自動保存されます` : "まだ保存されていません";
-  el.classList.toggle("ok", !!d);
+  el.textContent = dirty ? "● 保存していない変更があります"
+    : d ? `✓ 保存済み（${d.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}）` : "まだ保存されていません";
+  el.classList.toggle("ok", !!d && !dirty);
+  el.classList.toggle("warn", dirty);
 }
 
 /* ---------- 画面切替 ---------- */
 function setMode(m){
+  if (mode === "build" && m !== "build" && dirty) return confirmLeave(m);
   mode = m;
   document.body.className = "m-" + m;
   $("#tHome").classList.toggle("on", m==="home");
@@ -529,10 +535,25 @@ function setMode(m){
   window.scrollTo(0,0);
 }
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => setMode(b.dataset.go));
+// 保存していない変更があるときに、デッキ構築から離れようとしたら確認する
+function confirmLeave(next){
+  openModal(`<h3 style="margin:0 0 8px">保存していない変更があります</h3>
+    <p style="color:var(--muted);margin:0 0 16px;line-height:1.6">このまま移動すると、最後に保存したところまで戻ります。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn pri" id="lvSave">保存して移動</button>
+      <button class="btn dng" id="lvDrop">保存せずに移動</button>
+      <button class="btn" id="lvStay">編集を続ける</button>
+    </div>`);
+  $("#lvSave").onclick = () => { autoSave(); toast("保存しました"); setMode(next); };
+  $("#lvDrop").onclick = () => { dirty = false; setMode(next); };
+  $("#lvStay").onclick = () => closeModal();
+}
+window.addEventListener("beforeunload", e => { if (mode === "build" && dirty) { e.preventDefault(); e.returnValue = ""; } });
 function openDeck(key){
   const all = loadAll();
   if (key && all[key]) { deck = Object.fromEntries(Object.entries(all[key].deck).filter(([k])=>BY_ID[k])); deckName = all[key].name; editingKey = key; }
   else { deck = {}; deckName = "新しいデッキ"; editingKey = null; }
+  dirty = false; savedAt = editingKey && all[editingKey] ? new Date(all[editingKey].updated) : null;
   setMode("build");
   setSaveSt(editingKey && all[editingKey] ? new Date(all[editingKey].updated) : null);
 }
@@ -828,9 +849,9 @@ function migrateCurrent(){
   } catch {}
 }
 
-$("#dname").oninput = e => { deckName = e.target.value; autoSave(); };
+$("#dname").oninput = e => { deckName = e.target.value; markDirty(); };
 $("#bSave").onclick = () => {
-  autoSave(true);
+  autoSave();
   toast(total()===DECK_SIZE ? "保存しました" : `保存しました（現在${total()}枚）`);
 };
 $("#bClear").onclick = () => { if (!total()) return; if (!confirmInline()) return; deck = {}; changed(); };
@@ -1316,7 +1337,7 @@ function recStats(list){
   return {n:list.length, w, l, d, rate};
 }
 let recForm = {res:"", turn:"", opp:[]};
-$("#bRec").onclick = () => { if (!editingKey) autoSave(true); showRecords(editingKey); };
+$("#bRec").onclick = () => { if (!editingKey) return toast("先にデッキを保存してください"); showRecords(editingKey); };
 function showRecords(key){
   const all = loadAll(), deckD = all[key]; if (!deckD) return;
   const recs = loadRecs(), list = (recs[key]||[]).slice().sort((a,b)=>b.at.localeCompare(a.at));
