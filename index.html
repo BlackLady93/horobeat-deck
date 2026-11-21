@@ -233,6 +233,17 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 .qres .tag{font-size:12px;font-weight:700;border-radius:4px;padding:1px 6px;white-space:nowrap}
 .qres .tag.add{background:#1e3a1d;color:#a9e3a4} .qres .tag.up{background:#4a3a14;color:#ffd98a}
 .qres .r small{color:var(--muted);margin-left:auto;font-size:11px;white-space:nowrap}
+.qres .it{background:var(--panel2);border-radius:8px}
+.qres .it .r{background:none}
+.qres .sum{display:flex;flex-wrap:wrap;gap:4px 10px;padding:0 10px 8px;font-size:12px;color:var(--muted)}
+.qres .pl{color:#8fd68a;font-weight:700} .qres .mi{color:#ff8a7e;font-weight:700}
+.qres details{padding:0 10px 8px;font-size:12px}
+.qres summary{cursor:pointer;color:var(--accent)}
+.qres ul{list-style:none;margin:6px 0 0;padding:0;max-height:180px;overflow:auto}
+.qres li{display:flex;gap:8px;padding:3px 0;border-top:1px solid var(--line)}
+.qres li .d{width:3.2em;text-align:right;font-weight:700;flex:none}
+.qres li .ft{margin-left:auto;color:var(--muted);white-space:nowrap}
+.qres li small{color:var(--muted);font-size:10px;align-self:center}
 .qr textarea{height:90px;font-size:12px;word-break:break-all}
 .savest.ok{color:var(--ok)}
 .savest.warn{color:var(--accent)}
@@ -1204,12 +1215,28 @@ async function handleReceived(text){
   const decks = (o.d||[]).map(d => ({...d, deck: decodeCardMap(d.c), exists: !!all[d.k]}));
   const recCount = o.r ? Object.values(o.r).reduce((a,l)=>a+l.length,0) : 0;
   const ownedIn = o.o != null ? decodeCardMap(o.o) : null;
-  const ownedKinds = ownedIn ? Object.keys(ownedIn).length : 0;
+  // 今の内容と受け取った内容をくらべて、カードごとの増減を出す
+  const sumMap = m => Object.values(m||{}).reduce((a,b)=>a+b,0);
+  const diffOf = (from, to) => {
+    const rows = [...new Set([...Object.keys(from||{}), ...Object.keys(to||{})])].filter(id => BY_ID[id])
+      .map(id => ({c: BY_ID[id], a: (from||{})[id]||0, b: (to||{})[id]||0})).filter(x => x.a !== x.b)
+      .sort((x,y) => ORDER[x.c.id]-ORDER[y.c.id]);
+    return {rows, plus: rows.reduce((s,x)=>s+Math.max(0,x.b-x.a),0), minus: rows.reduce((s,x)=>s+Math.max(0,x.a-x.b),0)};
+  };
+  const diffHtml = (df, showFrom = true) => {
+    if (!df.rows.length) return `<div class="sum"><span>変更なし</span></div>`;
+    // 新しく追加するデッキは「何種類か」だけ、上書きするものは増えた枚数・減った枚数も出す
+    return `<div class="sum">${showFrom ? `${df.plus?`<span class="pl">＋${df.plus}枚</span>`:""}${df.minus?`<span class="mi">−${df.minus}枚</span>`:""}<span>${df.rows.length}種が変わる</span>` : `<span>${df.rows.length}種</span>`}</div>
+      <details><summary>カードごとに見る</summary><ul>${df.rows.map(x => { const d = x.b - x.a;
+        return `<li><span class="d ${d>0?"pl":"mi"}">${d>0?"＋":"−"}${Math.abs(d)}</span><span class="notr">${esc(x.c.name)}</span><small>${x.c.rarity}</small>${showFrom?`<span class="ft">${x.a} → ${x.b}</span>`:""}</li>`; }).join("")}</ul></details>`;
+  };
   openModal(`<div class="qr"><h2>受け取った内容</h2>
     <div class="qres">
-      ${decks.map(d => { const n = Object.values(d.deck).reduce((a,b)=>a+b,0), rc = o.r && o.r[d.k] ? o.r[d.k].length : 0;
-        return `<div class="r"><span class="tag ${d.exists?"up":"add"}">${d.exists?"上書き":"追加"}</span><span>${esc(d.n)}</span><small>${n}枚${rc?`・記録${rc}件`:""}</small></div>`; }).join("")}
-      ${ownedIn ? `<div class="r"><span class="tag up">上書き</span><span>所持カード</span><small>${ownedKinds}種</small></div>` : ""}
+      ${decks.map(d => { const n = sumMap(d.deck), cur = d.exists ? all[d.k].deck : null;
+        const have = new Set((recs[d.k]||[]).map(r => r.id)), rc = o.r && o.r[d.k] ? o.r[d.k].filter(r => !have.has(r[0])).length : 0;
+        return `<div class="it"><div class="r"><span class="tag ${d.exists?"up":"add"}">${d.exists?"上書き":"追加"}</span><span class="notr">${esc(d.n)}</span><small>${d.exists?`${sumMap(cur)}枚 → ${n}枚`:`${n}枚`}</small></div>
+          ${diffHtml(diffOf(cur, d.deck), d.exists)}${rc?`<div class="sum"><span class="pl">対戦記録 ＋${rc}件</span></div>`:""}</div>`; }).join("")}
+      ${ownedIn ? `<div class="it"><div class="r"><span class="tag up">上書き</span><span>所持カード</span><small>${sumMap(owned)}枚 → ${sumMap(ownedIn)}枚</small></div>${diffHtml(diffOf(owned, ownedIn))}</div>` : ""}
     </div>
     <p class="lead">${decks.length ? "同じデッキは受け取った内容で上書きし、ないデッキは追加します。" : ""}${recCount ? "対戦記録は今ある記録に足し合わせます（同じ記録は1件にまとめます）。" : ""}${ownedIn ? "所持カードは受け取った内容に置き換わります。" : ""}</p>
     <div class="qact"><button class="btn pri" id="qImp">取り込む</button><button class="btn" id="qCancel">やめる</button></div></div>`);
