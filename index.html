@@ -83,7 +83,7 @@ input[type=number]{width:54px}
 .qbox span{min-width:18px;text-align:center;font-weight:700}
 .empty{color:var(--muted);text-align:center;padding:40px 10px;line-height:1.8}
 /* ---- modal ---- */
-.modal{position:fixed;inset:0;height:100%;height:100dvh;background:#000c;display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal{position:fixed;inset:0;height:100%;height:100dvh;background:#000c;display:none;align-items:center;justify-content:center;z-index:90;padding:20px}
 .modal.open{display:flex}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:860px;width:100%;max-height:92vh;overflow:auto;padding:18px;position:relative}
 .mbox .x{position:absolute;top:8px;right:10px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)}
@@ -115,7 +115,7 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
 .saved .it{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--panel2);border-radius:6px}
 .saved .it .nm{flex:1}
 .saved .it small{color:var(--muted)}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#000e;border:1px solid var(--accent);padding:8px 16px;border-radius:8px;opacity:0;transition:.2s;pointer-events:none;z-index:60}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#000e;border:1px solid var(--accent);padding:8px 16px;border-radius:8px;opacity:0;transition:.2s;pointer-events:none;z-index:95}
 .toast.show{opacity:1}
 .mbar,.ftoggle{display:none}
 /* ---- モード切替 ---- */
@@ -326,7 +326,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.7.2</span>
+  <span class="ver">v1.7.3</span>
 </header>
 <section id="eventPane">
   <h2>イベント検索</h2>
@@ -802,7 +802,8 @@ $("#mx").onclick = closeModal;
 $("#modal").onclick = e => { if (e.target.id==="modal") closeModal(); };
 document.addEventListener("keydown", e => { if (e.key==="Escape") closeModal(); });
 
-function showDetail(id){
+// view=true：画像出力の画面から開いたとき（見るだけ。追加・削除ボタンは出さない）
+function showDetail(id, view = false){
   const c = BY_ID[id];
   const vars = CARDS.filter(x=>x.name===c.name);
   openModal(`<div class="detail">
@@ -831,7 +832,8 @@ function showDetail(id){
     </div></div>`);
   $("#dAdd").onclick = () => { mode==="coll" ? ownAdd(id) : add(id); showDetail(id); };
   $("#dRem").onclick = () => { mode==="coll" ? ownRem(id) : remove(id); showDetail(id); };
-  document.querySelectorAll(".vrow img").forEach(im => im.onclick = () => showDetail(im.dataset.id));
+  document.querySelectorAll(".vrow img").forEach(im => im.onclick = () => showDetail(im.dataset.id, view));
+  if (view) $("#dAdd").parentElement.remove();
 }
 
 /* ---------- 保存・読込 ---------- */
@@ -1434,6 +1436,13 @@ async function renderSheet(){
   const {cv} = await drawSheetCanvas({portrait, forExport:false});
   if (seq !== sheetDrawSeq) return;
   cv.id = "sheetCv"; $("#sheet").replaceChildren(cv);
+  // カードをクリック・タップしたら、そのカードの詳細を出す
+  const hitAt = e => {
+    const r = cv.getBoundingClientRect(), px = (e.clientX - r.left) * cv.width / r.width / cv._S, py = (e.clientY - r.top) * cv.height / r.height / cv._S;
+    return cv._hits.find(h => px >= h.x && px <= h.x + h.w && py >= h.y && py <= h.y + h.h);
+  };
+  cv.onclick = e => { const h = hitAt(e); if (h) { e.stopPropagation(); showDetail(h.id, true); } };
+  cv.onmousemove = e => { cv.style.cursor = hitAt(e) ? "pointer" : ""; };
   fitSheet();
 }
 /* ---- 画像の読み込み ----
@@ -1597,8 +1606,10 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
   const gy = GY0 + (GH - (ch*rows + gap*(rows-1))) / 2;
   const imgs = await imgsP;
   let failed = 0;
+  const hits = []; // カードの位置（タップしたカードを探す用）
   for (let k = 0; k < slots; k++){
     const cx = GX + (k%cols)*(cw+gap), cy = gy + Math.floor(k/cols)*(ch+gap);
+    if (k < list.length) hits.push({x:cx, y:cy, w:cw, h:ch, id:list[k].c.id});
     x.save(); pill(cx, cy, cw, ch, Math.min(6, cw/14)); x.clip();
     if (k < list.length){
       if (imgs[k]) x.drawImage(imgs[k], cx, cy, cw, ch);
@@ -1617,6 +1628,7 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
     }
     if (k >= list.length){ x.setLineDash([6,5]); x.strokeStyle = "rgba(217,164,65,.25)"; x.lineWidth = 2; pill(cx+1, cy+1, cw-2, ch-2, 6); x.stroke(); x.setLineDash([]); }
   }
+  cv._hits = hits; cv._S = S;
   return {cv, failed};
 }
 $("#sSave").onclick = async e => {
