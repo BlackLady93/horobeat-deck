@@ -20,6 +20,8 @@ button,select,input{font:inherit;color:inherit}
 header{display:flex;align-items:center;gap:16px;padding:10px 16px;border-bottom:1px solid var(--line);background:#0f0d0c}
 header h1{font-size:18px;margin:0;letter-spacing:.08em}
 header h1 span{color:var(--accent)}
+header h1{display:flex;align-items:center;gap:8px}
+header h1 .logo{width:30px;height:30px;border-radius:7px;flex:none}
 header .note{color:var(--muted);font-size:12px;margin-left:auto}
 header .ver{color:var(--muted);font-size:12px;margin-left:12px;white-space:nowrap}
 body:not(.m-build) header .ver{margin-left:auto}
@@ -316,6 +318,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   body{font-size:15px}
   header{padding:8px 12px;gap:8px}
   header h1{font-size:16px}
+  header h1 .logo{width:26px;height:26px}
   header .note{display:none}
   header{flex-wrap:wrap;row-gap:6px}
   .tabs{margin-left:0;flex:1;min-width:0;gap:4px}
@@ -383,7 +386,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 </head>
 <body>
 <header>
-  <h1>HOROBEAT <span>ファンツール</span></h1>
+  <h1><img class="logo" src="favicon-192.png" alt="">HOROBEAT <span>ファンツール</span></h1>
   <nav class="tabs">
     <button data-go="coll" id="tColl">カード</button>
     <button data-go="home" id="tHome">デッキ</button>
