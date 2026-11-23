@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>HOROBEAT ファンツール</title>
 <style>
 :root{
@@ -90,6 +93,7 @@ input[type=number]{width:54px}
 .detail{display:grid;grid-template-columns:300px 1fr;gap:18px}
 .detail img{width:100%;border-radius:10px}
 .detail h2{margin:0 0 10px;font-size:20px}
+.detail .thelp{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--muted)}
 .detail dl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:0 0 12px;font-size:13px}
 .detail dt{color:var(--muted)}
 .detail .tx{white-space:pre-wrap;background:var(--panel2);padding:10px;border-radius:8px;line-height:1.7;font-size:13px}
@@ -125,6 +129,44 @@ textarea{width:100%;height:280px;background:var(--panel2);border:1px solid var(-
 body.m-home .app, body.m-home .mbar, body.m-event .app, body.m-event .mbar{display:none !important}
 body:not(.m-home) #home{display:none}
 body:not(.m-event) #eventPane{display:none}
+body.m-set .app, body.m-set .mbar{display:none !important}
+body:not(.m-set) #setPane{display:none}
+/* ---- 設定 ---- */
+#setPane{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+#setPane h2{margin:0 0 14px;font-size:20px}
+#setPane h3{margin:22px 0 6px;font-size:16px}
+#setPane .lead{color:var(--muted);font-size:13px;margin:0 0 10px;line-height:1.6}
+.sbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.srow{display:flex;align-items:center;gap:12px}
+.srow select{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:160px}
+.notice p{margin:0;line-height:1.7;font-size:13px}
+.notice p+p{margin-top:8px;color:var(--muted)}
+html:not([lang=en]) .en-only{display:none}
+.credit{color:var(--muted);font-size:13px;margin-top:22px;line-height:1.7}
+.gloss{padding:0;margin-top:22px}
+.gloss summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px;font-weight:700;user-select:none}
+.gloss summary::-webkit-details-marker{display:none}
+.gloss summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .15s}
+.gloss[open] summary::after{transform:rotate(-135deg)}
+.gloss summary small{font-weight:400;color:var(--muted);font-size:12px}
+.gloss .gclose, .gloss[open] .gopen{display:none}
+.gloss[open] .gclose{display:inline}
+.gloss .lead, .gloss #glossBody{padding:0 14px}
+.gloss #glossBody{padding-bottom:14px}
+.gsec{margin:0 0 4px;color:var(--accent);font-size:13px;font-weight:700}
+.gtab{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:13px}
+.gtab:last-child{margin-bottom:0}
+.gtab td{border-top:1px solid var(--line);padding:6px 8px;vertical-align:top;width:50%}
+.gtab td:first-child{color:var(--muted)}
+.rj{display:block;font-size:10px;color:var(--muted);opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.detail h2 .rj{font-size:13px;font-weight:400;margin-top:2px}
+.drow .dn .rj{font-size:10px}
+.tnote{margin-top:6px;font-size:12px;color:var(--muted)}
+.tnote a{color:var(--accent);cursor:pointer}
+.detail .orig{margin-top:6px;font-size:12px}
+.detail .orig summary{cursor:pointer;color:var(--muted)}
+.detail .orig .tx{margin-top:6px;font-size:12px;opacity:.85}
+.bnav{display:none}
 /* ---- イベント検索 ---- */
 #eventPane{max-width:900px;margin:0 auto;padding:20px 16px 60px}
 #eventPane h2{margin:0 0 4px;font-size:20px}
@@ -279,7 +321,18 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   .tabs{margin-left:0;flex:1;min-width:0;gap:4px}
   header h1{width:100%}
   header .ver{margin-left:4px !important;font-size:11px}
-  .tabs button{flex:1;padding:5px 4px;font-size:13px;white-space:nowrap;border-color:var(--line)}
+  .tabs{display:none}
+  header h1{width:auto;flex:1}
+  .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:45;background:#0f0d0c;border-top:1px solid var(--line);
+    padding:4px 0 env(safe-area-inset-bottom)}
+  .bnav button{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 4px;font-size:11px;cursor:pointer}
+  .bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .bnav button.on{color:var(--accent)}
+  body.m-build .bnav{display:none}
+  body.m-coll .mbar{bottom:calc(58px + env(safe-area-inset-bottom))}
+  body.m-coll .left{padding-bottom:130px}
+  #home,#eventPane,#setPane{padding-bottom:90px}
+  .toast{bottom:130px}
   .ftoggle{top:0}
   .ev .region .rn{flex-basis:76px}
   .hgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -332,13 +385,32 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 <header>
   <h1>HOROBEAT <span>ファンツール</span></h1>
   <nav class="tabs">
-    <button data-go="home" id="tHome">デッキ一覧</button>
-    <button data-go="coll" id="tColl">所持カード登録</button>
+    <button data-go="coll" id="tColl">カード</button>
+    <button data-go="home" id="tHome">デッキ</button>
     <button data-go="event" id="tEvent">イベント</button>
+    <button data-go="set" id="tSet">設定</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.7.3</span>
+  <span class="ver">v1.8</span>
 </header>
+<section id="setPane">
+  <h2>設定</h2>
+  <div class="sbox">
+    <div class="srow"><label for="sLang">言語</label>
+      <select id="sLang"><option value="ja">日本語</option><option value="en">English</option></select></div>
+  </div>
+  <details class="sbox gloss" id="glossary">
+    <summary><span>用語集（非公式）</span><small class="gopen">タップで開く</small><small class="gclose">タップで閉じる</small></summary>
+    <p class="lead">カードの効果は日本語のままです。この用語集を見ながら読んでください。</p>
+    <div id="glossBody"></div>
+  </details>
+  <h3>注意</h3>
+  <div class="sbox notice">
+    <p class="notr">カード画像・カード情報の権利はタカラトミーにあります。非公式のファンツールです。<br>Card images and card information are the property of TOMY Company, Ltd. This is an unofficial fan-made tool.</p>
+    <p class="en-only">英語訳はすべて非公式です。</p>
+  </div>
+  <p class="credit">HOROBEAT Fan Tools <span class="vv">v1.8</span><br>Created by BlackLady93</p>
+</section>
 <section id="eventPane">
   <h2>イベント検索</h2>
   <p class="lead">条件を選んで「公式サイトで検索」を押すと、公式の「ホロビートカードゲーム公認イベント」検索が条件入りで開きます。選んだ条件は次回も残ります。<br>※開催内容は変更になる場合があります。参加前に必ずお店に確認してください。</p>
@@ -450,11 +522,27 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
   <button class="btn" id="sClose">閉じる</button>
 </div>
 <div class="toast" id="toast"></div>
+<nav class="bnav">
+  <button data-go="coll" id="bColl"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/></svg><span>カード</span></button>
+  <button data-go="home" id="bHome"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg><span>デッキ</span></button>
+  <button data-go="event" id="bEvent"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>イベント</span></button>
+  <button data-go="set" id="bSet"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>設定</span></button>
+</nav>
 
+<script src="i18n.js"></script>
 <script src="cards.js"></script>
 <script>
 (() => {
 const CARDS = window.HB_CARDS;
+const EN = window.LANG === "en", T = window.t;
+// トリガーの説明（公式の総合ルール 8.3 をもとに短くまとめたもの）
+const TRIG_HELP = {
+  "エントリートリガー": "ハートが破壊されたとき、このホロビトをコストなしで新しいラインに出すか、オーバービートで使える",
+  "オーバートリガー": "ハートが破壊されたとき、このホロビトをコストなしでオーバービートで使える",
+  "ドロートリガー": "ハートが破壊されたとき、このカードを墓地に送って3枚引く",
+  "ラストオーバートリガー": "ハートが破壊されたとき、このカードを見せて手札に加え1枚引く。自分のハートが1枚以下なら、このホロビトをコストなしでオーバービートで使える",
+};
+const RJ = (c, tag="small") => EN && c.romaji ? `<${tag} class="rj">${c.romaji}</${tag}>` : "";
 const BY_ID = Object.fromEntries(CARDS.map(c => [c.id, c]));
 const DECK_SIZE = 50, MAX_SAME = 4;
 const COLORS = ["赤","緑","青"];
@@ -537,11 +625,14 @@ function setMode(m){
   $("#tHome").classList.toggle("on", m==="home");
   $("#tColl").classList.toggle("on", m==="coll");
   $("#tEvent").classList.toggle("on", m==="event");
+  $("#tSet").classList.toggle("on", m==="set");
+  document.querySelectorAll(".bnav [data-go]").forEach(b => b.classList.toggle("on", b.dataset.go===m));
   $(".right").classList.remove("open"); $("#mdeck").textContent = "デッキを見る";
   $("#mhint").innerHTML = m==="coll" ? "タップ：所持+1<br>長押し：所持−1" : "タップ：追加<br>長押し：1枚削除";
   closeModal();
   if (m==="home") renderHome();
   else if (m==="event") renderEvent();
+  else if (m==="set") renderSettings();
   else { renderGrid(); renderDeck(); }
   window.scrollTo(0,0);
 }
@@ -563,7 +654,7 @@ window.addEventListener("beforeunload", e => { if (mode === "build" && dirty) { 
 function openDeck(key){
   const all = loadAll();
   if (key && all[key]) { deck = Object.fromEntries(Object.entries(all[key].deck).filter(([k])=>BY_ID[k])); deckName = all[key].name; editingKey = key; }
-  else { deck = {}; deckName = "新しいデッキ"; editingKey = null; }
+  else { deck = {}; deckName = T("新しいデッキ"); editingKey = null; }
   dirty = false; savedAt = editingKey && all[editingKey] ? new Date(all[editingKey].updated) : null;
   setMode("build");
   setSaveSt(editingKey && all[editingKey] ? new Date(all[editingKey].updated) : null);
@@ -600,7 +691,7 @@ function renderHome(){
     const cols = COLORS.filter(col=>ents.some(e=>e.c.color===col)).map(col=>`<i class="dot" style="background:${COLOR_HEX[col]}"></i>`).join("");
     return `<div class="htile" data-open="${k}">
       <div class="th">${thumbs}</div>
-      <div class="bd"><div class="nm">${esc(d.name)}</div>
+      <div class="bd"><div class="nm notr">${esc(d.name)}</div>
         <div class="mt">${cols}<span class="${n===DECK_SIZE?"ok":"ng"}">${n}/${DECK_SIZE}枚</span><span>${new Date(d.updated).toLocaleDateString("ja-JP")}</span></div>
         ${(() => { const st = recStats(loadRecs()[k]||[]); return st.n ? `<div class="mt"><span class="wl">${st.w}勝${st.l}敗${st.d?st.d+"分":""}</span><span>勝率 <b style="color:var(--accent)">${st.rate}</b></span></div>` : ""; })()}</div>
       <div class="ac"><button class="btn" data-rec="${k}">対戦記録</button><button class="btn" data-dup="${k}">複製</button><button class="btn dng" data-del="${k}">削除</button></div>
@@ -652,7 +743,7 @@ $("#reset").onclick = () => {
 };
 
 function match(c){
-  if (filt.q){ const q=filt.q.toLowerCase(); if(!(c.name+" "+c.text+" "+c.tribe+" "+c.keyword).toLowerCase().includes(q)) return false; }
+  if (filt.q){ const q=filt.q.toLowerCase(); if(!(c.name+" "+c.text+" "+c.tribe+" "+c.keyword+(EN?" "+c.romaji+" "+T(c.tribe)+" "+T(c.keyword)+" "+(window.effectEn(c.text)||""):"")).toLowerCase().includes(q)) return false; }
   if (filt.colors.size && !filt.colors.has(c.color)) return false;
   if (filt.types.size && !filt.types.has(c.type)) return false;
   if (filt.rars.size && !filt.rars.has(c.rarity)) return false;
@@ -695,7 +786,7 @@ function renderGrid(){
     d.innerHTML = `<img loading="lazy" alt="${c.name}" src="${imgSrc(c)}">
       ${grp && nv>1 ? `<span class="vars">${nv}種</span>`:""}
       <span class="qty" hidden></span><button class="info" title="詳細">ⓘ</button>
-      <div class="nm">${c.cost} / ${c.name}</div>`;
+      <div class="nm">${c.cost} / <span class="notr">${c.name}</span></div>${RJ(c,"div")}`;
     d.onclick = e => {
       if (suppressClick) { suppressClick = false; return; }
       if (e.target.classList.contains("info")) return showDetail(c.id);
@@ -773,7 +864,7 @@ function renderDeck(){
         const r = document.createElement("div"); r.className="drow";
         r.innerHTML = `<div class="cst" style="background:${COLOR_HEX[c.color]||'#666'}">${c.cost}</div>
           <img src="${imgSrc(c)}" alt="">
-          <div class="dn"><div>${c.name}</div><small>${c.rarity} ・ ${c.power} ・ ${c.trigger.replace("トリガー","")}</small></div>
+          <div class="dn"><div class="notr">${c.name}</div>${RJ(c,"div")}<small>${c.rarity} ・ ${c.power} ・ ${T(c.trigger.replace("トリガー",""))}</small></div>
           <div class="qbox"><button data-a="-">−</button><span>${n}</span><button data-a="+">＋</button></div>`;
         r.querySelector("img").onclick = () => showDetail(c.id);
         r.querySelector('[data-a="-"]').onclick = () => remove(c.id);
@@ -822,25 +913,30 @@ function showDetail(id, view = false){
       ${vars.length>1?`<div class="vrow">${vars.map(v=>`<img data-id="${v.id}" class="${v.id===id?'sel':''}" src="${imgSrc(v)}" title="${v.rarity} / ${window.HB_SETS[v.set]}">`).join("")}</div>`:""}
     </div>
     <div>
-      <h2>${c.name}</h2>
+      <h2><span class="notr">${c.name}</span>${RJ(c)}</h2>
       <dl>
         <dt>カードタイプ</dt><dd>${c.type}</dd>
         <dt>色</dt><dd><i class="dot" style="background:${COLOR_HEX[c.color]}"></i>${c.color}</dd>
         <dt>コスト / パワー</dt><dd>${c.cost} / ${c.power}</dd>
         ${c.type==="ホロビト"?`<dt>ブースト</dt><dd>${c.boost?"あり":"なし"}</dd><dt>種族</dt><dd>${c.tribe}</dd>`:""}
         <dt>キーワード能力</dt><dd>${c.keyword||"—"}</dd>
-        <dt>トリガー</dt><dd>${c.trigger}</dd>
+        <dt>トリガー</dt><dd>${c.trigger}${TRIG_HELP[c.trigger] ? `<small class="thelp">${TRIG_HELP[c.trigger]}</small>` : ""}</dd>
         <dt>レアリティ</dt><dd>${c.rarity}</dd>
         <dt>収録先</dt><dd>${window.HB_SETS[c.set]}</dd>
         ${mode==="build"?`<dt>デッキ内</dt><dd>${deck[id]||0}枚（同名合計 ${sameNameCount(c.name)}/4）</dd>`:""}
         <dt>所持</dt><dd>${owned[id]||0}枚（同名合計 ${ownedName(c.name)}枚）</dd>
       </dl>
-      <div class="tx">${c.text || "（能力なし）"}</div>
+      ${!c.text ? `<div class="tx">（能力なし）</div>`
+        : EN && window.effectEn(c.text) ? `<div class="tx notr">${esc(window.effectEn(c.text))}</div>
+            <div class="tnote">Unofficial translation · <a id="dGloss">Glossary</a></div>
+            <details class="orig"><summary>Show original (Japanese)</summary><div class="tx notr">${c.text}</div></details>`
+        : `<div class="tx notr">${c.text}</div>${EN?`<div class="tnote">English translation coming soon — see <a id="dGloss">Glossary</a></div>`:""}`}
       <div style="margin-top:12px;display:flex;gap:8px">
         <button class="btn pri" id="dAdd">${mode==="coll"?"所持 +1":"このイラストで追加"}</button>
         <button class="btn" id="dRem">${mode==="coll"?"所持 −1":"1枚減らす"}</button>
       </div>
     </div></div>`);
+  if ($("#dGloss")) $("#dGloss").onclick = () => { $("#sClose").click(); setMode("set"); setTimeout(() => { $("#glossary").open = true; $("#glossary").scrollIntoView(); }, 0); };
   $("#dAdd").onclick = () => { mode==="coll" ? ownAdd(id) : add(id); showDetail(id); };
   $("#dRem").onclick = () => { mode==="coll" ? ownRem(id) : remove(id); showDetail(id); };
   document.querySelectorAll(".vrow img").forEach(im => im.onclick = () => showDetail(im.dataset.id, view));
@@ -1106,7 +1202,7 @@ function showQrSendDecks(){
     <div class="qopt"><button class="btn" id="qAll">すべて選択</button><button class="btn" id="qNone">選択を解除</button></div>
     <div class="qsel">${items.map(([k,d]) => {
       const n = Object.values(d.deck).reduce((a,b)=>a+b,0);
-      return `<label data-k="${k}"><input type="checkbox" ${qrSel.has(k)?"checked":""}><span>${esc(d.name)}</span><small>${n}枚</small></label>`; }).join("")}</div>
+      return `<label data-k="${k}"><input type="checkbox" ${qrSel.has(k)?"checked":""}><span class="notr">${esc(d.name)}</span><small>${n}枚</small></label>`; }).join("")}</div>
     <div class="qmeter" id="qMeter"><div class="t"><span>QRコードの容量</span><b id="qMeterT">-</b></div><div class="bar"><i id="qMeterB" style="width:0"></i></div></div>
     <div class="qmsg" id="qMsg"></div>
     <div class="qact"><button class="btn pri" id="qGo">送る</button></div></div>`);
@@ -1303,6 +1399,14 @@ function evUrl(){
   return EV_URL + (qs ? "?" + qs : "");
 }
 let evBuilt = false;
+/* ---------- 設定 ---------- */
+function renderSettings(){
+  $("#sLang").value = window.LANG;
+  $("#sLang").onchange = e => window.setLang(e.target.value);
+  if (!$("#glossBody").childElementCount)
+    $("#glossBody").innerHTML = window.GLOSSARY.map(([ja, en, rows]) =>
+      `<div class="gsec notr">${ja} / ${en}</div><table class="gtab notr">${rows.map(([j,e]) => `<tr><td>${j}</td><td>${e}</td></tr>`).join("")}</table>`).join("");
+}
 function renderEvent(){
   if (!evBuilt){
     evBuilt = true;
@@ -1348,7 +1452,7 @@ function evChanged(rerenderInputs = true){
   const names = evState.prefs.slice().sort((a,b)=>a-b).map(c => document.querySelector(`#evPrefs [data-pc="${c}"]`)?.textContent);
   const fd = d => d ? d.slice(5).replace("-","/") : "";
   const parts = [
-    names.length ? (names.length > 4 ? `${names.slice(0,4).join("・")}ほか${names.length-4}件` : names.join("・")) : "全国",
+    names.length ? (names.length > 4 ? `${names.slice(0,4).join(EN?", ":"・")}ほか${names.length-4}件` : names.join(EN?", ":"・")) : "全国",
     evState.start || evState.end ? `${fd(evState.start)}〜${fd(evState.end)}` : "日付指定なし",
   ];
   if (evState.time) parts.push(`${+evState.time.slice(0,2)}:${evState.time.slice(2)}以降`);
@@ -1404,7 +1508,7 @@ function showRecords(key){
       <div class="rrow">
         <div class="res ${r.res}">${{W:"勝",L:"負",D:"分"}[r.res]}</div>
         <div class="dt">${new Date(r.at).toLocaleDateString("ja-JP")}<br>${new Date(r.at).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</div>
-        <div class="op"><div>${r.turn?`<span class="tag">${r.turn==="1"?"先攻":"後攻"}</span>`:""}${(r.opp||[]).map(c=>`<i class="dot" style="background:${COLOR_HEX[c]}"></i>`).join("")}${esc(r.oppName||"")}</div>${r.memo?`<small>${esc(r.memo)}</small>`:""}</div>
+        <div class="op"><div>${r.turn?`<span class="tag">${r.turn==="1"?"先攻":"後攻"}</span>`:""}${(r.opp||[]).map(c=>`<i class="dot" style="background:${COLOR_HEX[c]}"></i>`).join("")}<span class="notr">${esc(r.oppName||"")}</span></div>${r.memo?`<small class="notr">${esc(r.memo)}</small>`:""}</div>
         <button class="rx" data-rdel="${r.id}" title="削除">×</button>
       </div>`).join("") : `<p class="empty" style="padding:20px">まだ記録がありません</p>`}</div>
   </div>`);
@@ -1523,10 +1627,10 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
                             : ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => ({c, miss: j >= n-missOf[i]})));
   const imgsP = Promise.all(list.map(tl => loadCardImg(tl.c, forExport)));
   const badges = [
-    {t:`デッキ ${t}/${DECK_SIZE}`, bg:"#000", fg: t===DECK_SIZE ? "#fff" : AC, bd: t===DECK_SIZE ? "#6fb36a" : AC},
-    {t:`ホロビト ${h}`, bg:"#a8792a"}, {t:`ワザ ${t-h}`, bg:"#4d6d91"},
-    ...COLORS.filter(k=>col[k]).map(k=>({t:`${k} ${col[k]}`, bg:{赤:"#d0564a",緑:"#5fa65a",青:"#4a86c8"}[k]})),
-    ...(sheetMiss ? [{t:`不足 ${lack}`, bg:"#e0584c"}] : [])
+    {t:`${EN?"Deck":"デッキ"} ${t}/${DECK_SIZE}`, bg:"#000", fg: t===DECK_SIZE ? "#fff" : AC, bd: t===DECK_SIZE ? "#6fb36a" : AC},
+    {t:`${T("ホロビト")} ${h}`, bg:"#a8792a"}, {t:`${T("ワザ")} ${t-h}`, bg:"#4d6d91"},
+    ...COLORS.filter(k=>col[k]).map(k=>({t:`${T(k)} ${col[k]}`, bg:{赤:"#d0564a",緑:"#5fa65a",青:"#4a86c8"}[k]})),
+    ...(sheetMiss ? [{t:`${EN?"Missing":"不足"} ${lack}`, bg:"#e0584c"}] : [])
   ];
   // バッジの並び（折り返し位置）を先に計算
   const badgeLayout = (ctx, bx0, y, maxW, fs) => {
@@ -1579,8 +1683,8 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
   const drawHist = (hx, hy, hw, hh) => {
     pill(hx, hy, hw, hh, 10); x.fillStyle = "rgba(0,0,0,.35)"; x.fill(); x.strokeStyle = "rgba(217,164,65,.3)"; x.lineWidth = 1; x.stroke();
     const fs = portrait ? 18 : 14;
-    x.font = `${fs}px ${FONT}`; x.fillStyle = MU; x.fillText("コスト分布", hx+14, hy+14);
-    x.textAlign = "right"; x.fillText(`平均 ${avg}`, hx+hw-14, hy+14); x.textAlign = "left";
+    x.font = `${fs}px ${FONT}`; x.fillStyle = MU; x.fillText(EN?"Cost curve":"コスト分布", hx+14, hy+14);
+    x.textAlign = "right"; x.fillText(`${EN?"Avg.":"平均"} ${avg}`, hx+hw-14, hy+14); x.textAlign = "left";
     const gapB = portrait ? 14 : 5, bw = (hw - 28 - 9*gapB) / 10, base = hy + hh - fs - 22, maxH = hh - fs*3 - 50;
     bk.slice(1).forEach((b,i) => {
       const bx2 = hx + 14 + i*(bw+gapB);
@@ -1600,7 +1704,7 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
   let GX0, GY0, GW, GH;
   if (portrait){
     const LX = 48, CW = W - 96;
-    x.fillStyle = TX; x.font = `800 46px ${FONT}`; x.fillText(fitText(deckName || "無題", CW), LX, 50);
+    x.fillStyle = TX; x.font = `800 46px ${FONT}`; x.fillText(fitText(deckName || T("無題"), CW), LX, 50);
     x.fillStyle = AC; x.font = `16px ${FONT}`; x.fillText("H O R O B E A T   D E C K", LX, 108);
     drawHist(LX, 146, CW, 260);
     drawBadges(LX, 430, CW, 22);
@@ -1646,7 +1750,7 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
     x.restore();
     if (sheetGrouped && k < list.length){
       const it = list[k], fs0 = Math.max(13, Math.round(cw/7)), fs = it.miss ? Math.round(fs0*.7) : fs0;
-      const label = `×${it.n}${it.miss ? `（不足${it.miss}）` : ""}`;
+      const label = `×${it.n}${it.miss ? (EN ? ` (missing ${it.miss})` : `（不足${it.miss}）`) : ""}`;
       x.font = `800 ${fs}px ${FONT}`; const tw = x.measureText(label).width, bw = tw + 20, bh = fs + 8;
       const bx = cx + cw - bw - 5, by = cy + ch - bh - 5;
       x.shadowColor = "rgba(0,0,0,.6)"; x.shadowBlur = 4;
