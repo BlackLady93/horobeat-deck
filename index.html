@@ -30,6 +30,17 @@ body:not(.m-build) header .ver{margin-left:auto}
 .left{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
 .filters{padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
 .filters .grp{display:flex;gap:4px;align-items:center}
+.msel{position:relative}
+.msel .mbtn{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 26px 6px 10px;color:inherit;font:inherit;font-size:13px;cursor:pointer;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.msel .mbtn::after{content:"";position:absolute;right:10px;top:50%;width:6px;height:6px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
+.msel .mbtn.on{border-color:var(--accent);color:var(--accent)}
+.msel .mpanel{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:35;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px;min-width:220px;max-width:min(360px,90vw);max-height:min(360px,55vh);overflow:auto;box-shadow:0 8px 24px #0008}
+.msel.open .mpanel{display:block}
+.msel .mpanel label{display:flex;gap:8px;align-items:center;padding:6px 6px;border-radius:6px;cursor:pointer;font-size:13px}
+.msel .mpanel label:hover{background:var(--panel2)}
+.msel .mtop{display:flex;justify-content:flex-end;padding:2px 2px 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.msel .mtop .btn{font-size:12px;padding:3px 8px}
+.msel input{accent-color:var(--accent)}
 .filters label.t{color:var(--muted);font-size:12px;margin-right:2px}
 .chip{border:1px solid var(--line);background:var(--panel2);padding:3px 10px;border-radius:14px;cursor:pointer;user-select:none;font-size:13px}
 .chip.on{border-color:var(--accent);background:#3b2f1c;color:#ffe0a3}
@@ -199,6 +210,18 @@ body.m-coll .app{grid-template-columns:1fr}
 .rrow .op{min-width:0}
 .rrow .op div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rrow .op small{color:var(--muted);font-size:12px;display:block;white-space:normal}
+.htile.bad{background:rgba(224,88,76,.10);border-color:rgba(224,88,76,.45)}
+.btn.off{opacity:.4}
+.rnote{color:var(--muted);font-size:13px;margin:6px 0 10px}
+.rrow .rdk{display:flex;gap:6px;align-items:center;margin-top:4px}
+.rrow .rdk .btn{padding:2px 8px;font-size:11px}
+.rrow .tag.diff{background:rgba(217,164,65,.18);color:var(--accent)}
+.rrow .nodk{color:var(--muted);font-size:11px}
+.rdeckv ul{list-style:none;margin:0 0 12px;padding:0;max-height:55vh;overflow:auto}
+.rdeckv li{display:flex;gap:8px;align-items:center;padding:5px 2px;border-top:1px solid var(--line);font-size:13px}
+.rdeckv li .d{width:2.4em;text-align:right;font-weight:700;color:var(--accent);flex:none}
+.rdeckv li small{color:var(--muted);font-size:10px}
+.rdeckv li .ft{margin-left:auto;color:var(--danger);font-size:12px;white-space:nowrap}
 .rrow .rx{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px}
 .tag{font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:4px;color:var(--muted)}
 /* ---- 所持登録 ---- */
@@ -275,10 +298,23 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 .card img,.drow img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .card,.drow,.btn,.chip,.qbox button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @media (hover:none){.card .info{opacity:1}.card:hover{transform:none}}
+.bbar{display:none}
 @media (max-width:900px){
+  body.m-build header .tabs{display:none !important}
+  body.m-build header h1{width:auto;flex:1}
+  body.m-build .bbar{display:flex;gap:6px;align-items:center;width:100%}
+  .bbar .btn{flex:none;padding:6px 10px;font-size:13px;white-space:nowrap}
+  .bbar .bbname{flex:1;min-width:0;position:relative}
+  .bbar #bbName{width:100%;box-sizing:border-box;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:inherit;font:inherit;font-size:14px;padding:6px 26px 6px 8px;text-overflow:ellipsis}
+  .bbar .bbdot{display:none;position:absolute;right:9px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:var(--accent)}
+  .bbar.dirty .bbdot{display:block}
   body{font-size:15px}
   header{padding:8px 12px;gap:8px}
   header h1{font-size:16px}
+  /* スマホ：収録先・種族のチェック一覧は、絞り込みの中にそのまま開く */
+  .msel{flex-wrap:wrap;width:100%}
+  .msel .mbtn{max-width:none;width:100%;text-align:left}
+  .msel .mpanel{position:static;width:100%;max-width:none;max-height:45vh;margin-top:4px;box-shadow:none}
   header h1 .logo{width:26px;height:26px}
   header .note{display:none}
   header{flex-wrap:wrap;row-gap:6px}
@@ -343,7 +379,13 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.7.4</span>
+  <span class="ver">v1.8</span>
+  <!-- スマホのデッキ構築中だけ：タブの代わりに出すバー -->
+  <div class="bbar">
+    <button type="button" class="btn" id="bbBack">← 一覧へ</button>
+    <span class="bbname"><input id="bbName" class="notr" aria-label="デッキ名"><i class="bbdot" title="保存していない変更があります"></i></span>
+    <button type="button" class="btn pri" id="bbSave">保存</button>
+  </div>
 </header>
 <section id="eventPane">
   <h2>イベント検索</h2>
@@ -374,17 +416,17 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 <div class="app">
   <section class="left">
     <div class="ftoggle">
-      <input type="search" id="qm" placeholder="カード名・能力で検索">
+      <input type="search" id="qm" placeholder="キーワードで検索">
       <button class="btn" id="fbtn">絞り込み</button>
     </div>
     <div class="filters" id="filters">
-      <div class="grp"><input type="search" id="q" placeholder="カード名・能力・種族で検索"></div>
+      <div class="grp"><input type="search" id="q" placeholder="キーワードで検索"></div>
       <div class="grp" id="fColor"><label class="t">色</label></div>
       <div class="grp" id="fType"><label class="t">タイプ</label></div>
       <div class="grp"><label class="t">コスト</label><input type="number" id="cmin" min="0" max="12">〜<input type="number" id="cmax" min="0" max="12"></div>
       <div class="grp" id="fRar"><label class="t">レア</label></div>
-      <div class="grp"><select id="fSet"><option value="">収録先：すべて</option></select></div>
-      <div class="grp"><select id="fTribe"><option value="">種族：すべて</option></select></div>
+      <div class="grp msel" id="fSet"><button type="button" class="mbtn">収録先：すべて</button><div class="mpanel"></div></div>
+      <div class="grp msel" id="fTribe"><button type="button" class="mbtn">種族：すべて</button><div class="mpanel"></div></div>
       <div class="grp"><select id="fKw"><option value="">キーワード：すべて</option></select></div>
       <div class="grp"><select id="fTrig"><option value="">トリガー：すべて</option></select></div>
       <div class="grp"><select id="fBoost"><option value="">ブースト：すべて</option><option value="1">あり</option><option value="0">なし</option></select></div>
@@ -461,6 +503,11 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 <script>
 (() => {
 const CARDS = window.HB_CARDS;
+// 検索用：NFKC（全角→半角）・小文字・カタカナ→ひらがな にそろえる
+const normQ = t => String(t||"").normalize("NFKC").toLowerCase().replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+const SEARCH_CACHE = {};
+const searchText = c => SEARCH_CACHE[c.id] || (SEARCH_CACHE[c.id] = normQ([c.name, c.kana||"", c.text, c.tribe, c.keyword].join(" ")).replace(/[・\s]+/g, " ")
+  + " " + normQ(c.name + " " + (c.kana||"")).replace(/[・\s]/g, "") + " " + normQ(c.kana||"").replace(/[・\s]/g, ""));
 const BY_ID = Object.fromEntries(CARDS.map(c => [c.id, c]));
 const DECK_SIZE = 50, MAX_SAME = 4;
 const COLORS = ["赤","緑","青"];
@@ -486,7 +533,7 @@ function detectLocal(){
 let deck = {};               // id -> 枚数
 let deckName = "新しいデッキ";
 let editingKey = null;       // 保存済みデッキのキー
-const filt = {q:"",colors:new Set(),types:new Set(),rars:new Set(),cmin:"",cmax:"",set:"",tribe:"",kw:"",trig:"",boost:""};
+const filt = {q:"",colors:new Set(),types:new Set(),rars:new Set(),cmin:"",cmax:"",sets:new Set(),tribes:new Set(),kw:"",trig:"",boost:""};
 
 let mode = "home";           // home / build / coll
 let owned = {};              // id -> 所持枚数
@@ -502,7 +549,6 @@ const total = () => Object.values(deck).reduce((a,b)=>a+b,0);
 
 function add(id){
   const c = BY_ID[id];
-  if (total() >= DECK_SIZE) return toast("デッキは50枚までです");
   if (sameNameCount(c.name) >= MAX_SAME) return toast(`「${c.name}」は4枚までです`);
   deck[id] = (deck[id]||0) + 1; changed();
 }
@@ -528,12 +574,19 @@ function autoSave(){
   setSaveSt(now);
 }
 function setSaveSt(d){
+  // スマホ上のバー：デッキ名と「保存していない変更」の点をそろえる
+  const bn = $("#bbName"); if (bn && document.activeElement !== bn) bn.value = $("#dname").value;
+  document.querySelector(".bbar")?.classList.toggle("dirty", dirty);
   const el = $("#saveSt"); if (!el) return;
   el.textContent = dirty ? "● 保存していない変更があります"
     : d ? `✓ 保存済み（${d.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}）` : "まだ保存されていません";
   el.classList.toggle("ok", !!d && !dirty);
   el.classList.toggle("warn", dirty);
 }
+
+$("#bbBack").onclick = () => $("#bBack").click();
+$("#bbSave").onclick = () => $("#bSave").click();
+$("#bbName").oninput = e => { const d = $("#dname"); d.value = e.target.value; d.dispatchEvent(new Event("input", {bubbles:true})); };
 
 /* ---------- 画面切替 ---------- */
 function setMode(m){
@@ -604,12 +657,13 @@ function renderHome(){
     const n = ents.reduce((s,e)=>s+e.n,0);
     const thumbs = ents.sort((a,b)=>b.c.cost-a.c.cost||b.n-a.n).slice(0,3).map(e=>`<img src="${imgSrc(e.c)}" alt="">`).join("");
     const cols = COLORS.filter(col=>ents.some(e=>e.c.color===col)).map(col=>`<i class="dot" style="background:${COLOR_HEX[col]}"></i>`).join("");
-    return `<div class="htile" data-open="${k}">
+    const recN = (loadRecs()[k]||[]).length;
+    return `<div class="htile${n===DECK_SIZE?"":" bad"}" data-open="${k}">
       <div class="th">${thumbs}</div>
       <div class="bd"><div class="nm">${esc(d.name)}</div>
         <div class="mt">${cols}<span class="${n===DECK_SIZE?"ok":"ng"}">${n}/${DECK_SIZE}枚</span><span>${new Date(d.updated).toLocaleDateString("ja-JP")}</span></div>
         ${(() => { const st = recStats(loadRecs()[k]||[]); return st.n ? `<div class="mt"><span class="wl">${st.w}勝${st.l}敗${st.d?st.d+"分":""}</span><span>勝率 <b style="color:var(--accent)">${st.rate}</b></span></div>` : ""; })()}</div>
-      <div class="ac"><button class="btn" data-rec="${k}">対戦記録</button><button class="btn" data-dup="${k}">複製</button><button class="btn dng" data-del="${k}">削除</button></div>
+      <div class="ac"><button class="btn${n===DECK_SIZE?"":" off"}" data-rec="${k}" data-ok="${n===DECK_SIZE?1:""}" data-rn="${recN}">対戦記録</button><button class="btn" data-dup="${k}">複製</button><button class="btn dng" data-del="${k}">削除</button></div>
     </div>`;}).join("")}</div>`;
   el.querySelectorAll("[data-open]").forEach(t => t.onclick = e => { if (e.target.closest("button")) return; openDeck(t.dataset.open); });
   el.querySelectorAll("[data-dup]").forEach(b => b.onclick = () => { const d=all[b.dataset.dup]; all["d"+Date.now()]={...d,name:d.name+" のコピー",updated:new Date().toISOString()}; saveAll(all); renderHome(); });
@@ -619,7 +673,11 @@ function renderHome(){
     const r = loadRecs(); delete r[b.dataset.del]; saveRecs(r);
     renderHome(); toast("削除しました");
   });
-  el.querySelectorAll("[data-rec]").forEach(b => b.onclick = () => showRecords(b.dataset.rec));
+  // 50枚でないデッキは対戦記録をつけられない（前の記録があれば見るだけできる）
+  el.querySelectorAll("[data-rec]").forEach(b => b.onclick = () => {
+    if (!b.dataset.ok && !+b.dataset.rn) return toast("50枚になると対戦記録をつけられます");
+    showRecords(b.dataset.rec);
+  });
 }
 
 /* ---------- フィルタUI ---------- */
@@ -636,8 +694,23 @@ chips("#fColor", COLORS, filt.colors, "c-");
 chips("#fType", ["ホロビト","ワザ"], filt.types);
 chips("#fRar", RARS, filt.rars);
 const fillSel = (sel, vals, label=v=>v) => vals.forEach(v => { const o=document.createElement("option"); o.value=v; o.textContent=label(v); $(sel).appendChild(o); });
-fillSel("#fSet", Object.keys(window.HB_SETS), k => window.HB_SETS[k]);
-fillSel("#fTribe", [...new Set(CARDS.map(c=>c.tribe).filter(Boolean))].sort());
+// 収録先・種族は、チェックで複数選べるプルダウン
+function multiSel(sel, title, vals, set, label = v => v){
+  const box = $(sel), btn = box.querySelector(".mbtn"), panel = box.querySelector(".mpanel");
+  const upd = () => { btn.textContent = set.size === 0 ? `${title}：すべて` : set.size === 1 ? `${title}：${label([...set][0])}` : `${title}：${set.size}件`;
+    btn.classList.toggle("on", set.size > 0); };
+  panel.innerHTML = `<div class="mtop"><button type="button" class="btn mclr">選択を解除</button></div>` +
+    vals.map(v => `<label><input type="checkbox" value="${v}"><span>${label(v)}</span></label>`).join("");
+  panel.querySelectorAll("input").forEach(cb => cb.onchange = () => { cb.checked ? set.add(cb.value) : set.delete(cb.value); upd(); renderGrid(); });
+  panel.querySelector(".mclr").onclick = () => { set.clear(); panel.querySelectorAll("input").forEach(cb => cb.checked = false); upd(); renderGrid(); };
+  btn.onclick = e => { e.stopPropagation(); document.querySelectorAll(".msel.open").forEach(m => m !== box && m.classList.remove("open")); box.classList.toggle("open"); };
+  panel.onclick = e => e.stopPropagation();
+  box._reset = () => { set.clear(); panel.querySelectorAll("input").forEach(cb => cb.checked = false); upd(); };
+  upd();
+}
+document.addEventListener("click", () => document.querySelectorAll(".msel.open").forEach(m => m.classList.remove("open")));
+multiSel("#fSet", "収録先", Object.keys(window.HB_SETS), filt.sets, k => window.HB_SETS[k]);
+multiSel("#fTribe", "種族", [...new Set(CARDS.map(c=>c.tribe).filter(Boolean))].sort(), filt.tribes);
 fillSel("#fKw", [...new Set(CARDS.map(c=>c.keyword).filter(Boolean))]);
 fillSel("#fTrig", Object.values(window.HB_TRIGGERS));
 const bind = (sel, key, ev="input") => $(sel).addEventListener(ev, e => { filt[key] = e.target.value.trim(); renderGrid(); });
@@ -647,25 +720,27 @@ $("#mdeck").onclick = () => {
   const open = $(".right").classList.toggle("open");
   $("#mdeck").textContent = open ? "カード一覧へ" : "デッキを見る";
 }; bind("#cmax","cmax");
-bind("#fSet","set","change"); bind("#fTribe","tribe","change"); bind("#fKw","kw","change"); bind("#fTrig","trig","change"); bind("#fBoost","boost","change");
+bind("#fKw","kw","change"); bind("#fTrig","trig","change"); bind("#fBoost","boost","change");
 $("#grpName").onchange = renderGrid; $("#sort").onchange = renderGrid; $("#lack").onchange = renderGrid;
 $("#reset").onclick = () => {
-  Object.assign(filt,{q:"",cmin:"",cmax:"",set:"",tribe:"",kw:"",trig:"",boost:""});
+  Object.assign(filt,{q:"",cmin:"",cmax:"",kw:"",trig:"",boost:""});
+  $("#fSet")._reset(); $("#fTribe")._reset();
   ["colors","types","rars"].forEach(k=>filt[k].clear());
   document.querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on"));
-  ["#q","#cmin","#cmax"].forEach(s=>$(s).value=""); ["#fSet","#fTribe","#fKw","#fTrig","#fBoost"].forEach(s=>$(s).value="");
+  ["#q","#cmin","#cmax"].forEach(s=>$(s).value=""); ["#fKw","#fTrig","#fBoost"].forEach(s=>$(s).value="");
   renderGrid();
 };
 
 function match(c){
-  if (filt.q){ const q=filt.q.toLowerCase(); if(!(c.name+" "+c.text+" "+c.tribe+" "+c.keyword).toLowerCase().includes(q)) return false; }
+  // キーワード検索：スペースで区切ると、全部に当てはまるカードだけ出す（ひらがな・カタカナ、全角・半角は区別しない）
+  if (filt.q){ const hs = searchText(c); if (!normQ(filt.q).replace(/・/g, " ").split(/\s+/).filter(Boolean).every(w => hs.includes(w))) return false; }
   if (filt.colors.size && !filt.colors.has(c.color)) return false;
   if (filt.types.size && !filt.types.has(c.type)) return false;
   if (filt.rars.size && !filt.rars.has(c.rarity)) return false;
   if (filt.cmin!=="" && c.cost < +filt.cmin) return false;
   if (filt.cmax!=="" && c.cost > +filt.cmax) return false;
-  if (filt.set && c.set!==filt.set) return false;
-  if (filt.tribe && c.tribe!==filt.tribe) return false;
+  if (filt.sets.size && !filt.sets.has(c.set)) return false;
+  if (filt.tribes.size && !filt.tribes.has(c.tribe)) return false;
   if (filt.kw && c.keyword!==filt.kw) return false;
   if (filt.trig && c.trigger!==filt.trig) return false;
   if (filt.boost!=="" && c.boost !== (filt.boost==="1")) return false;
@@ -740,7 +815,7 @@ function renderGridBadges(){
     renderOwnSum();
     return;
   }
-  const full = total() >= DECK_SIZE;
+  const full = false; // 50枚を超えても入れられる（同名4枚の決まりはそのまま）
   const grp = $("#grpName").checked;
   document.querySelectorAll(".card").forEach(el => {
     el.classList.remove("none","lack");
@@ -764,6 +839,7 @@ function renderDeck(){
   [$("#count"), $("#mcount")].forEach(ce => {
     ce.textContent = `${t}/${DECK_SIZE}`;
     ce.className = "count" + (t===DECK_SIZE?" ok":t>DECK_SIZE?" over":"");
+    $("#bRec").classList.toggle("off", t !== DECK_SIZE);
   });
   $("#dname").value = deckName;
   const ents = deckEntries();
@@ -1372,7 +1448,11 @@ function recStats(list){
   return {n:list.length, w, l, d, rate};
 }
 let recForm = {res:"", turn:"", opp:[]};
-$("#bRec").onclick = () => { if (!editingKey) return toast("先にデッキを保存してください"); showRecords(editingKey); };
+$("#bRec").onclick = () => {
+  if (total() !== DECK_SIZE) return toast("50枚になると対戦記録をつけられます");
+  if (!editingKey) return toast("先にデッキを保存してください");
+  showRecords(editingKey);
+};
 function showRecords(key){
   const all = loadAll(), deckD = all[key]; if (!deckD) return;
   const recs = loadRecs(), list = (recs[key]||[]).slice().sort((a,b)=>b.at.localeCompare(a.at));
@@ -1383,6 +1463,9 @@ function showRecords(key){
   list.forEach(r => (r.opp||[]).forEach(c => (col[c] ||= []).push(r)));
   const names = [...new Set(Object.values(recs).flat().map(r=>r.oppName).filter(Boolean))];
   const now = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+  // 保存されているデッキが50枚のときだけ、新しい記録をつけられる
+  const cnt = m => Object.values(m||{}).reduce((a,b)=>a+b,0), canRec = cnt(deckD.deck) === DECK_SIZE;
+  const sameDeck = (a, b) => { const ka = Object.keys(a).filter(k=>a[k]), kb = Object.keys(b).filter(k=>b[k]); return ka.length === kb.length && ka.every(k => a[k] === b[k]); };
   openModal(`<div class="rec">
     <h2>対戦記録：${esc(deckD.name)}</h2>
     <div class="rsum">
@@ -1390,7 +1473,8 @@ function showRecords(key){
       ${turn["1"]?fmt("先攻",turn["1"]):""}${turn["2"]?fmt("後攻",turn["2"]):""}
       ${COLORS.filter(c=>col[c]).map(c=>fmt(`vs <i class="dot" style="background:${COLOR_HEX[c]}"></i>${c}`, col[c])).join("")}
     </div>
-    <div class="rform">
+    ${canRec ? "" : `<p class="rnote">このデッキは50枚ではないので、新しい記録はつけられません。</p>`}
+    <div class="rform"${canRec ? "" : ` style="display:none"`}>
       <label class="k">結果</label>
       <div class="seg" id="fRes"><span class="chip w" data-v="W">勝ち</span><span class="chip l" data-v="L">負け</span><span class="chip" data-v="D">引き分け</span></div>
       <label class="k">先攻/後攻</label>
@@ -1410,7 +1494,8 @@ function showRecords(key){
       <div class="rrow">
         <div class="res ${r.res}">${{W:"勝",L:"負",D:"分"}[r.res]}</div>
         <div class="dt">${new Date(r.at).toLocaleDateString("ja-JP")}<br>${new Date(r.at).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})}</div>
-        <div class="op"><div>${r.turn?`<span class="tag">${r.turn==="1"?"先攻":"後攻"}</span>`:""}${(r.opp||[]).map(c=>`<i class="dot" style="background:${COLOR_HEX[c]}"></i>`).join("")}${esc(r.oppName||"")}</div>${r.memo?`<small>${esc(r.memo)}</small>`:""}</div>
+        <div class="op"><div>${r.turn?`<span class="tag">${r.turn==="1"?"先攻":"後攻"}</span>`:""}${(r.opp||[]).map(c=>`<i class="dot" style="background:${COLOR_HEX[c]}"></i>`).join("")}${esc(r.oppName||"")}</div>${r.memo?`<small>${esc(r.memo)}</small>`:""}
+          <div class="rdk">${r.deck ? `<button class="btn" data-rdeck="${r.id}">デッキを見る</button>${sameDeck(r.deck, deckD.deck) ? "" : `<span class="tag diff">今と違う</span>`}` : `<span class="nodk">デッキなし</span>`}</div></div>
         <button class="rx" data-rdel="${r.id}" title="削除">×</button>
       </div>`).join("") : `<p class="empty" style="padding:20px">まだ記録がありません</p>`}</div>
   </div>`);
@@ -1427,9 +1512,22 @@ function showRecords(key){
     const at = $("#fAt").value ? new Date($("#fAt").value).toISOString() : new Date().toISOString();
     const r2 = loadRecs();
     (r2[key] ||= []).push({ id: "r"+Date.now(), at, res: recForm.res, turn: recForm.turn, opp: [...recForm.opp],
-      oppName: $("#fName").value.trim(), memo: $("#fMemo").value.trim() });
+      oppName: $("#fName").value.trim(), memo: $("#fMemo").value.trim(), deck: {...deckD.deck} }); // 記録したときのデッキも残す
     saveRecs(r2); toast("記録しました"); showRecords(key); if (mode==="home") renderHome();
   };
+  // 記録したときのデッキを見る
+  document.querySelectorAll("[data-rdeck]").forEach(b => b.onclick = () => {
+    const r = list.find(x => x.id === b.dataset.rdeck); if (!r) return;
+    const ents = Object.entries(r.deck).filter(([id,n]) => BY_ID[id] && n).map(([id,n]) => ({c:BY_ID[id], n, now:deckD.deck[id]||0}))
+      .sort((a,b) => ORDER[a.c.id]-ORDER[b.c.id]);
+    const gone = Object.entries(deckD.deck).filter(([id,n]) => BY_ID[id] && n && !r.deck[id]).map(([id,n]) => ({c:BY_ID[id], n:0, now:n}));
+    const row = e => `<li><span class="d">×${e.n}</span><span class="notr">${esc(e.c.name)}</span><small>${e.c.rarity}</small>${e.now!==e.n?`<span class="ft">今は×${e.now}</span>`:""}</li>`;
+    openModal(`<div class="rec rdeckv"><h2>記録したときのデッキ</h2>
+      <p class="rnote">${new Date(r.at).toLocaleDateString("ja-JP")} ・ ${{W:"勝",L:"負",D:"分"}[r.res]} ・ ${cnt(r.deck)}枚</p>
+      <ul>${ents.map(row).join("")}${gone.map(row).join("")}</ul>
+      <div class="act"><button class="btn" id="rBack">← 対戦記録へ</button></div></div>`);
+    $("#rBack").onclick = () => showRecords(key);
+  });
   document.querySelectorAll("[data-rdel]").forEach(b => b.onclick = () => {
     if (!confirmInline()) return;
     const r2 = loadRecs(); r2[key] = (r2[key]||[]).filter(r => r.id !== b.dataset.rdel); saveRecs(r2);
@@ -1496,7 +1594,7 @@ function loadCardImg(c, forExport = true){
 }
 // カード欄に収まる並べ方：全部並べる＝10×5、まとめる＝枚数に合わせて最大サイズ
 function gridFit(n, GW, GH, grouped){
-  if (!grouped || n === 0) { const gap = 8, w = Math.min((GW - gap*9)/10, ((GH - gap*4)/5)*600/838); return {cols:10, w, h:w*838/600, gap}; }
+  if (!grouped || n === 0) { const gap = 8, rows = Math.max(5, Math.ceil(n/10)), w = Math.min((GW - gap*9)/10, ((GH - gap*(rows-1))/rows)*600/838); return {cols:10, w, h:w*838/600, gap}; }
   const gap = 12; let best = {w:0, cols:1};
   for (let cols = 1; cols <= n; cols++){
     const rows = Math.ceil(n/cols);
@@ -1545,7 +1643,7 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
     return {pos, bottom: y + bh};
   };
   // 縦長は中身に合わせて高さを決める
-  const slots = sheetGrouped ? list.length : DECK_SIZE;
+  const slots = sheetGrouped ? list.length : Math.max(DECK_SIZE, list.length);
   let H = 1000, pGrid = null;
   if (portrait){
     const mctx = document.createElement("canvas").getContext("2d");
