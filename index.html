@@ -272,6 +272,17 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
 .qres li .d{width:3.2em;text-align:right;font-weight:700;flex:none}
 .qres li .ft{margin-left:auto;color:var(--muted);white-space:nowrap}
 .qres li small{color:var(--muted);font-size:10px;align-self:center}
+.plist{display:flex;flex-direction:column;gap:8px}
+.plist .btn{display:flex;justify-content:space-between;align-items:center;text-align:left;padding:12px 14px}
+.plist .btn small{color:var(--muted)}
+.drq{background:var(--panel2);border-radius:8px;padding:10px;margin-bottom:10px}
+.drq p{margin:0 0 8px;font-size:13px}
+.drimg{display:flex;gap:10px;justify-content:center;margin-bottom:8px}
+.drimg figure{margin:0;text-align:center;font-size:11px;color:var(--muted)}
+.drimg img{width:96px;border-radius:6px;display:block}
+.drbtn{display:flex;gap:6px;flex-wrap:wrap}
+.drbtn .btn{flex:1;font-size:12px}
+.prod .act{display:flex;justify-content:space-between;gap:8px;margin-top:12px}
 .qr textarea{height:90px;font-size:12px;word-break:break-all}
 .savest.ok{color:var(--ok)}
 .savest.warn{color:var(--accent)}
@@ -379,7 +390,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.8.1</span>
+  <span class="ver">v1.8.2</span>
   <!-- スマホのデッキ構築中だけ：タブの代わりに出すバー -->
   <div class="bbar">
     <button type="button" class="btn" id="bbBack">← 一覧へ</button>
@@ -439,6 +450,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
       <span class="coll-only" id="ownSum"></span>
       <button class="btn coll-only" id="bCollIO">書き出し/読込</button>
       <button class="btn coll-only" id="cQrSend">QRで送る</button>
+      <button class="btn coll-only" id="cProd">商品をまとめて登録</button>
       <button class="btn coll-only" id="cQrRecv">QRで受け取る</button>
       <span class="sp">並び順
         <select id="sort">
@@ -1043,6 +1055,38 @@ function decodeOldLines(txt){ // 旧形式「枚数 名前 [ID]」
   });
   return {no, miss};
 }
+/* ---------- 商品をまとめて登録（構築済みデッキの中身を所持カードに足す） ---------- */
+// 中身は比嘉さんが手元のデッキで数えたもの（2026/11/25）
+const PRODUCTS = [{"key": "sd01", "name": "スタートデッキ レオジン 赤（HB-SD01）", "cards": {"hd01-001-c-01": 3, "hd01-002-c-01": 3, "hd01-003-c-01": 4, "hd01-004-c-01": 4, "hd01-005-c-01": 2, "hd01-006-c-01": 3, "hd01-007-c-01": 4, "hd01-008-c-01": 3, "hd01-009-uc-01": 3, "hd01-010-uc-01": 3, "hd01-011-uc-01": 3, "hd01-012-uc-01": 3, "hd01-013-uc-01": 3, "hd01-014-r-01": 2, "hd01-015-r-01": 3, "hd01-016-r-01": 1, "hd01-017-sr-01": 3}, "dr": {"sr": "hd01-017-sr-01", "dr": "hd01-017-dr-01"}}, {"key": "sd02", "name": "スタートデッキ 不死火 緑（HB-SD02）", "cards": {"hd02-001-c-01": 3, "hd02-002-c-01": 4, "hd02-003-c-01": 3, "hd02-004-c-01": 4, "hd02-005-c-01": 3, "hd02-006-c-01": 4, "hd02-007-c-01": 3, "hd02-008-c-01": 3, "hd02-009-uc-01": 3, "hd02-010-uc-01": 3, "hd02-011-uc-01": 3, "hd02-012-uc-01": 3, "hd02-013-uc-01": 3, "hd02-014-r-01": 1, "hd02-015-r-01": 2, "hd02-016-r-01": 2, "hd02-017-sr-01": 3}, "dr": {"sr": "hd02-017-sr-01", "dr": "hd02-017-dr-01"}}, {"key": "cr", "name": "コロコロコミック付録デッキ2026 赤", "cards": {"pr-002-c-01": 4, "pr-003-c-01": 4, "pr-004-c-01": 4, "pr-005-uc-01": 4, "pr-006-uc-01": 4, "pr-007-c-01": 4, "pr-008-c-01": 4, "pr-009-c-01": 4, "pr-010-uc-01": 4, "pr-011-r-01": 4, "pr-012-c-01": 4, "pr-013-c-01": 2, "pr-014-uc-01": 4}}, {"key": "cg", "name": "コロコロコミック付録デッキ2026 緑", "cards": {"pr-015-c-01": 4, "pr-016-c-01": 4, "pr-017-c-01": 4, "pr-018-uc-01": 4, "pr-019-c-01": 4, "pr-020-c-01": 4, "pr-021-c-01": 4, "pr-022-uc-01": 4, "pr-023-uc-01": 4, "pr-024-c-01": 4, "pr-025-r-01": 4, "pr-026-c-01": 2, "pr-027-uc-01": 4}}];
+$("#cProd").onclick = () => {
+  openModal(`<div class="qr prod"><h2>商品をまとめて登録</h2>
+    <p class="lead">買った商品を選ぶと、入っているカードを所持カードに足します。同じ商品を2つ買ったときは、2回登録してください。</p>
+    <div class="plist">${PRODUCTS.map((p,i) => `<button class="btn" data-p="${i}"><span>${p.name}</span><small>50枚</small></button>`).join("")}</div></div>`);
+  document.querySelectorAll(".plist [data-p]").forEach(b => b.onclick = () => prodConfirm(PRODUCTS[+b.dataset.p], false));
+};
+function prodConfirm(p, hasDr){
+  const add = {...p.cards};
+  if (p.dr && hasDr) { add[p.dr.sr] = (add[p.dr.sr]||0) - 1; add[p.dr.dr] = (add[p.dr.dr]||0) + 1; }
+  const rows = Object.entries(add).filter(([id,n]) => BY_ID[id] && n > 0).map(([id,n]) => ({c:BY_ID[id], n, a:owned[id]||0}))
+    .sort((x,y) => ORDER[x.c.id]-ORDER[y.c.id]);
+  const total = rows.reduce((s,x)=>s+x.n,0);
+  const drQ = p.dr ? `<div class="drq"><p>特別イラスト（DR）の「<span class="notr">${esc(BY_ID[p.dr.sr].name)}</span>」は入っていましたか？</p>
+      <div class="drimg"><figure><img src="${imgSrc(BY_ID[p.dr.sr])}" alt=""><figcaption>SR</figcaption></figure><figure><img src="${imgSrc(BY_ID[p.dr.dr])}" alt=""><figcaption>DR</figcaption></figure></div>
+      <div class="drbtn"><button class="btn${hasDr?"":" pri"}" id="drNo">入っていない（SR×3）</button><button class="btn${hasDr?" pri":""}" id="drYes">入っていた（SR×2＋DR×1）</button></div></div>` : "";
+  openModal(`<div class="qr prod"><h2>商品をまとめて登録</h2>
+    <p class="lead"><b>${p.name}</b></p>${drQ}
+    <div class="qres"><div class="it"><div class="r"><span class="tag add">追加</span><span>所持カード</span><small>${Object.values(owned).reduce((a,b)=>a+b,0)}枚 → ${Object.values(owned).reduce((a,b)=>a+b,0)+total}枚</small></div>
+      <div class="sum"><span class="pl">＋${total}枚</span><span>${rows.length}種</span></div>
+      <details><summary>カードごとに見る</summary><ul>${rows.map(x => `<li><span class="d pl">＋${x.n}</span><span class="notr">${esc(x.c.name)}</span><small>${x.c.rarity}</small><span class="ft">${x.a} → ${x.a+x.n}</span></li>`).join("")}</ul></details></div></div>
+    <div class="act"><button class="btn" id="pBack">← 商品を選び直す</button><button class="btn pri" id="pGo">登録する</button></div></div>`);
+  if (p.dr) { $("#drNo").onclick = () => prodConfirm(p, false); $("#drYes").onclick = () => prodConfirm(p, true); }
+  $("#pBack").onclick = () => $("#cProd").click();
+  $("#pGo").onclick = () => {
+    rows.forEach(x => owned[x.c.id] = (owned[x.c.id]||0) + x.n);
+    saveOwned(); renderGrid(); closeModal(); toast(`${total}枚を所持カードに登録しました`);
+  };
+}
+
 $("#bCollIO").onclick = () => {
   const txt = encodeOwned();
   openModal(`<h2 style="margin-top:0">所持カード 書き出し / 読込</h2>
