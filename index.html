@@ -379,7 +379,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.8</span>
+  <span class="ver">v1.8.1</span>
   <!-- スマホのデッキ構築中だけ：タブの代わりに出すバー -->
   <div class="bbar">
     <button type="button" class="btn" id="bbBack">← 一覧へ</button>
@@ -591,6 +591,9 @@ $("#bbName").oninput = e => { const d = $("#dname"); d.value = e.target.value; d
 /* ---------- 画面切替 ---------- */
 function setMode(m){
   if (mode === "build" && m !== "build" && dirty) return confirmLeave(m);
+  // 前の状態を残さない：デッキ一覧の色の絞り込み、カードタブの「4枚未満のカードだけ」
+  if (m === "home") { homeColors.clear(); document.querySelectorAll("#hFilter .chip.on").forEach(c => c.classList.remove("on")); }
+  if (m === "coll" && mode !== "coll") $("#lack").checked = false;
   mode = m;
   document.body.className = "m-" + m;
   $("#tHome").classList.toggle("on", m==="home");
@@ -625,6 +628,8 @@ function openDeck(key){
   else { deck = {}; deckName = "新しいデッキ"; editingKey = null; }
   dirty = false; savedAt = editingKey && all[editingKey] ? new Date(all[editingKey].updated) : null;
   setMode("build");
+  // デッキを開くたびに、前の絞り込みと「未所持を赤く」をはずす
+  $("#reset").click(); viewMiss = false; sheetMiss = false;
   setSaveSt(editingKey && all[editingKey] ? new Date(all[editingKey].updated) : null);
 }
 $("#hNew").onclick = () => openDeck(null);
@@ -727,7 +732,7 @@ $("#reset").onclick = () => {
   $("#fSet")._reset(); $("#fTribe")._reset();
   ["colors","types","rars"].forEach(k=>filt[k].clear());
   document.querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on"));
-  ["#q","#cmin","#cmax"].forEach(s=>$(s).value=""); ["#fKw","#fTrig","#fBoost"].forEach(s=>$(s).value="");
+  ["#q","#qm","#cmin","#cmax"].forEach(s=>{ if ($(s)) $(s).value=""; }); ["#fKw","#fTrig","#fBoost"].forEach(s=>$(s).value="");
   renderGrid();
 };
 
@@ -1182,7 +1187,7 @@ function showQrSendDecks(){
   const all = loadAll();
   const items = Object.entries(all).sort((a,b)=>b[1].updated.localeCompare(a[1].updated));
   if (!items.length) return toast("送れるデッキがありません");
-  qrSel = new Set([...qrSel].filter(k => all[k]));
+  qrSel = new Set(); // QRで送るデッキは、毎回選び直す
   openModal(`<div class="qr"><h2>QRで送る：デッキを選ぶ</h2>
     <p class="lead">選んだデッキをQRコードにします。受け取った側では、同じデッキは上書き、ないデッキは追加されます。</p>
     <div class="qopt"><button class="btn" id="qAll">すべて選択</button><button class="btn" id="qNone">選択を解除</button></div>
