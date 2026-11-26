@@ -99,6 +99,8 @@ input[type=number]{width:54px}
 .qbox span{min-width:18px;text-align:center;font-weight:700}
 .empty{color:var(--muted);text-align:center;padding:40px 10px;line-height:1.8}
 /* ---- modal ---- */
+.pkw{color:#ffd27a}.pkt{background:#e0584c;color:#fff;border-radius:6px;padding:0 6px;font-size:11px;font-weight:700}
+.missl{max-height:40vh;overflow:auto;background:#0004;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.7}
 .modal{position:fixed;inset:0;height:100%;height:100dvh;background:#000c;display:none;align-items:center;justify-content:center;z-index:90;padding:20px}
 .modal.open{display:flex}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:860px;width:100%;max-height:92vh;overflow:auto;padding:18px;position:relative}
@@ -390,7 +392,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.8.2</span>
+  <span class="ver">v1.8.3</span>
   <!-- スマホのデッキ構築中だけ：タブの代わりに出すバー -->
   <div class="bbar">
     <button type="button" class="btn" id="bbBack">← 一覧へ</button>
@@ -979,9 +981,54 @@ const esc = s => String(s).replace(/[&<>"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&
 function deckText(){
   return `# ${deckName}（${total()}枚）\n` + deckEntries().map(({c,n})=>`${n} ${c.name} [${c.id}]`).join("\n");
 }
+/* ---------- 1行を「カード＋枚数」に読む（少しの表記ブレは許す） ----------
+   例: 4 レオまる [hb01-002-c-01] / 4 レオまる #hb01-002-c-01 / レオまる ×4 / 4枚 HB01-002 / ４　レオまる */
+const nameKey = t => String(t||"").normalize("NFKC").toLowerCase().replace(/[\s・]/g, "");
+const NAME_IDX = {};
+CARDS.forEach(c => [c.name, c.romaji].forEach(k => { k = nameKey(k); if (k) (NAME_IDX[k] = NAME_IDX[k] || []).push(c); }));
+const pickNormal = cs => cs.find(c => !["DR","SEC"].includes(c.rarity) && /-01$/.test(c.id)) || cs.find(c => !["DR","SEC"].includes(c.rarity)) || cs[0];
+function parseDeckLine(raw){
+  let l = String(raw).normalize("NFKC").trim();
+  let id = null, n = null, alt = null;
+  // カードID（どこにあってもOK・大文字小文字・カッコや#は気にしない）
+  const im = l.match(/((?:[a-z]{2}\d{2}|pr)-\d{3})(?:-([a-z]+)-(\d{2}))?/i);
+  if (im){
+    const full = im[0].toLowerCase(), base = im[1].toLowerCase();
+    if (BY_ID[full]) id = full;
+    else { const cs = CARDS.filter(c => c.id.startsWith(base + "-")); const c = pickNormal(cs); if (c) { id = c.id; alt = cs; } }
+    l = (l.slice(0, im.index) + " " + l.slice(im.index + im[0].length)).replace(/[\[\]()（）【】<>「」#＃]/g, " ").trim();
+  }
+  // 枚数（先頭か最後）
+  let cm = l.match(/^(\d+)\s*(?:[x×*]|枚)?\s*(.*)$/i);
+  if (cm && (cm[2] || id)) { n = +cm[1]; l = cm[2]; }
+  else if ((cm = l.match(/^(.*?)\s*(?:[x×*]\s*(\d+)|(\d+)\s*枚|\s(\d+))$/i))) { n = +(cm[2] || cm[3] || cm[4]); l = cm[1]; }
+  l = l.replace(/^[\s:：\-–—]+|[\s:：\-–—]+$/g, "");
+  // IDがないときはカード名で探す（同名が複数なら通常レア）
+  if (!id && l){ const cs = NAME_IDX[nameKey(l)]; const c = cs && pickNormal(cs); if (c) { id = c.id; alt = cs; } }
+  if (!id) return null;
+  if (n == null) n = 1;
+  // guess：IDがなくて、こちらで選んだとき。others：同じ名前・番号のほかのレア
+  // 同じレアなら収録先で区別（例：HD01版）
+  const r0 = BY_ID[id].rarity;
+  const others = alt ? [...new Set(alt.filter(c => c.id !== id).map(c => c.rarity === r0 ? c.id.split("-")[0].toUpperCase() + "版" : c.rarity))] : [];
+  return n > 0 ? {id, n, guess: !!alt, others} : null;
+}
+// 読込の結果：名前（やカード番号）だけで選んだ行と、読み込めなかった行を見せる
+function showImportReport(miss, picked){
+  if (!miss.length && !picked.length) return;
+  const pk = picked.map(r => { const c = BY_ID[r.id];
+    return `<div class="${r.others.length ? "pkw" : ""}"><span class="notr">${esc(r.line)}</span> → <span class="notr">${esc(c.name)}</span> ${esc(c.rarity)}（<span class="notr">${esc(c.id)}</span>）${r.others.length ? ` <b class="pkt">ほかに ${esc(r.others.join("・"))} あり</b>` : ""}</div>`; }).join("");
+  openModal(`${picked.length ? `<h2 style="margin-top:0">名前だけで選んだカード</h2>
+    <p style="color:var(--muted);font-size:12px">カードIDがなかったので、名前から選びました。印のある行は、レア違いや収録先違いもあるカードです。違っていたらデッキで入れ替えてください。</p>
+    <div class="missl">${pk}</div>` : ""}
+    ${miss.length ? `<h2 style="${picked.length ? "margin-top:14px" : "margin-top:0"}">読み込めなかった行</h2>
+    <p style="color:var(--muted);font-size:12px">次の行はカードが見つからなかったので、読み込んでいません。</p>
+    <div class="missl">${miss.map(l => `<div class="notr">${esc(l)}</div>`).join("")}</div>` : ""}
+    <div style="margin-top:10px"><button class="btn" onclick="document.getElementById('mx').click()">閉じる</button></div>`);
+}
 $("#bExport").onclick = () => {
   openModal(`<h2 style="margin-top:0">書き出し / 読込</h2>
-    <p style="color:var(--muted);font-size:12px">「枚数 カード名 [カードID]」形式。IDがなければカード名で照合します（同名が複数あるときは通常レアを優先）。</p>
+    <p style="color:var(--muted);font-size:12px">「枚数 カード名 [カードID]」形式。カッコや#の違い、枚数が後ろ（×4・4枚）、カード番号だけ（HB01-002）でも読めます。IDがなければカード名で照合します（同名が複数あるときは通常レアを優先）。</p>
     <textarea id="ta">${esc(deckText())}</textarea>
     <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn pri" id="tCopy">コピー</button>
@@ -989,19 +1036,19 @@ $("#bExport").onclick = () => {
     </div>`);
   $("#tCopy").onclick = async () => { try { await navigator.clipboard.writeText($("#ta").value); toast("コピーしました"); } catch { $("#ta").select(); toast("選択しました。Ctrl+Cでコピーしてください"); } };
   $("#tImport").onclick = () => {
-    const lines = $("#ta").value.split(/\r?\n/); const nd = {}; let nm = deckName; const miss = [];
+    const lines = $("#ta").value.split(/\r?\n/); const nd = {}; let nm = deckName; const miss = [], picked = [];
     lines.forEach(l => {
       l = l.trim(); if (!l) return;
-      if (l.startsWith("#")) { nm = l.replace(/^#\s*/,"").replace(/（\d+枚）$/,"") || nm; return; }
-      const m = l.match(/^(\d+)\s*[x×]?\s*(.+?)\s*(?:\[([\w-]+)\])?$/);
-      if (!m) return miss.push(l);
-      let id = m[3] && BY_ID[m[3]] ? m[3] : null;
-      if (!id){ const cs = CARDS.filter(c=>c.name===m[2]); const pick = cs.find(c=>!["DR","SEC"].includes(c.rarity)) || cs[0]; id = pick && pick.id; }
-      if (!id) return miss.push(l);
-      nd[id] = (nd[id]||0) + +m[1];
+      // 先頭が「#」でカードIDがない行はデッキ名
+      if (/^[#＃]/.test(l) && !/((?:[a-z]{2}\d{2}|pr)-\d{3})/i.test(l)) { nm = l.replace(/^[#＃]\s*/,"").replace(/[（(]\d+枚[）)]$/,"").trim() || nm; return; }
+      const r = parseDeckLine(l);
+      if (!r) return miss.push(l);
+      if (r.guess) picked.push({...r, line:l});
+      nd[r.id] = (nd[r.id]||0) + r.n;
     });
     deck = nd; deckName = nm; editingKey = null; changed(); closeModal();
     toast(miss.length ? `読み込みました（${miss.length}行は認識できませんでした）` : "読み込みました");
+    showImportReport(miss, picked);
   };
 };
 
@@ -1046,12 +1093,10 @@ function decodeOwned(txt){
 function decodeOldLines(txt){ // 旧形式「枚数 名前 [ID]」
   const no = {}; let miss = 0;
   txt.split(/\r?\n/).forEach(l => {
-    l = l.trim(); if (!l || l.startsWith("#")) return;
-    const m = l.match(/^(\d+)\s*[x×]?\s*(.+?)\s*(?:\[([\w-]+)\])?$/); if (!m) return miss++;
-    let id = m[3] && BY_ID[m[3]] ? m[3] : null;
-    if (!id){ const cs = CARDS.filter(c=>c.name===m[2]); const pick = cs.find(c=>!["DR","SEC"].includes(c.rarity)) || cs[0]; id = pick && pick.id; }
-    if (!id) return miss++;
-    no[id] = (no[id]||0) + +m[1];
+    l = l.trim(); if (!l) return;
+    if (/^[#＃]/.test(l) && !/((?:[a-z]{2}\d{2}|pr)-\d{3})/i.test(l)) return;
+    const r = parseDeckLine(l); if (!r) return miss++;
+    no[r.id] = (no[r.id]||0) + r.n;
   });
   return {no, miss};
 }
@@ -1676,17 +1721,18 @@ async function drawSheetCanvas({portrait = false, forExport = true} = {}){
                             : ents.flatMap(({c,n},i) => Array.from({length:n}, (_,j) => ({c, miss: j >= n-missOf[i]})));
   const imgsP = Promise.all(list.map(tl => loadCardImg(tl.c, forExport)));
   const badges = [
-    {t:`デッキ ${t}/${DECK_SIZE}`, bg:"#000", fg: t===DECK_SIZE ? "#fff" : AC, bd: t===DECK_SIZE ? "#6fb36a" : AC},
-    {t:`ホロビト ${h}`, bg:"#a8792a"}, {t:`ワザ ${t-h}`, bg:"#4d6d91"},
-    ...COLORS.filter(k=>col[k]).map(k=>({t:`${k} ${col[k]}`, bg:{赤:"#d0564a",緑:"#5fa65a",青:"#4a86c8"}[k]})),
-    ...(sheetMiss ? [{t:`不足 ${lack}`, bg:"#e0584c"}] : [])
+    // 行ごと：(50枚ちょうどでないときだけ デッキ枚数) / ホロビト・ワザ / 色 / (不足)
+    ...(t!==DECK_SIZE ? [{t:`デッキ ${t}/${DECK_SIZE}`, bg:"#e0584c", br:1}] : []),
+    {t:`ホロビト ${h}`, bg:"#a8792a", br:1}, {t:`ワザ ${t-h}`, bg:"#4d6d91"},
+    ...COLORS.filter(k=>col[k]).map((k,i)=>({t:`${k} ${col[k]}`, bg:{赤:"#d0564a",緑:"#5fa65a",青:"#4a86c8"}[k], br:i===0})),
+    ...(sheetMiss ? [{t:`不足 ${lack}`, bg:"#e0584c", br:1}] : [])
   ];
   // バッジの並び（折り返し位置）を先に計算
   const badgeLayout = (ctx, bx0, y, maxW, fs) => {
     ctx.font = `700 ${fs}px ${FONT}`; let bx = bx0; const bh = fs + 17, pos = [];
-    badges.forEach(b => {
+    badges.forEach((b,i) => {
       const w = ctx.measureText(b.t).width + fs*1.6;
-      if (bx + w > bx0 + maxW) { bx = bx0; y += bh + 8; }
+      if (i && (b.br || bx + w > bx0 + maxW)) { bx = bx0; y += bh + 8; }
       pos.push({b, x:bx, y, w, h:bh}); bx += w + 8;
     });
     return {pos, bottom: y + bh};
