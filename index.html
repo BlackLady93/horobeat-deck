@@ -6,6 +6,13 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- アプリ化（PWA） -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14110f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HOROBEAT">
 <title>HOROBEAT ファンツール</title>
 <style>
 :root{
@@ -392,7 +399,7 @@ body.m-coll .card.lack .qty{background:var(--accent);color:#1b1306}
     <button data-go="event" id="tEvent">イベント</button>
   </nav>
   <div class="note">クリック：追加　右クリック：削除　ⓘ：詳細 ／ 50枚ちょうど・同名4枚まで</div>
-  <span class="ver">v1.8.3</span>
+  <span class="ver">v1.8.4</span>
   <!-- スマホのデッキ構築中だけ：タブの代わりに出すバー -->
   <div class="bbar">
     <button type="button" class="btn" id="bbBack">← 一覧へ</button>
@@ -1102,7 +1109,7 @@ function decodeOldLines(txt){ // 旧形式「枚数 名前 [ID]」
 }
 /* ---------- 商品をまとめて登録（構築済みデッキの中身を所持カードに足す） ---------- */
 // 中身は比嘉さんが手元のデッキで数えたもの（2026/11/25）
-const PRODUCTS = [{"key": "sd01", "name": "スタートデッキ レオジン 赤（HB-SD01）", "cards": {"hd01-001-c-01": 3, "hd01-002-c-01": 3, "hd01-003-c-01": 4, "hd01-004-c-01": 4, "hd01-005-c-01": 2, "hd01-006-c-01": 3, "hd01-007-c-01": 4, "hd01-008-c-01": 3, "hd01-009-uc-01": 3, "hd01-010-uc-01": 3, "hd01-011-uc-01": 3, "hd01-012-uc-01": 3, "hd01-013-uc-01": 3, "hd01-014-r-01": 2, "hd01-015-r-01": 3, "hd01-016-r-01": 1, "hd01-017-sr-01": 3}, "dr": {"sr": "hd01-017-sr-01", "dr": "hd01-017-dr-01"}}, {"key": "sd02", "name": "スタートデッキ 不死火 緑（HB-SD02）", "cards": {"hd02-001-c-01": 3, "hd02-002-c-01": 4, "hd02-003-c-01": 3, "hd02-004-c-01": 4, "hd02-005-c-01": 3, "hd02-006-c-01": 4, "hd02-007-c-01": 3, "hd02-008-c-01": 3, "hd02-009-uc-01": 3, "hd02-010-uc-01": 3, "hd02-011-uc-01": 3, "hd02-012-uc-01": 3, "hd02-013-uc-01": 3, "hd02-014-r-01": 1, "hd02-015-r-01": 2, "hd02-016-r-01": 2, "hd02-017-sr-01": 3}, "dr": {"sr": "hd02-017-sr-01", "dr": "hd02-017-dr-01"}}, {"key": "cr", "name": "コロコロコミック付録デッキ2026 赤", "cards": {"pr-002-c-01": 4, "pr-003-c-01": 4, "pr-004-c-01": 4, "pr-005-uc-01": 4, "pr-006-uc-01": 4, "pr-007-c-01": 4, "pr-008-c-01": 4, "pr-009-c-01": 4, "pr-010-uc-01": 4, "pr-011-r-01": 4, "pr-012-c-01": 4, "pr-013-c-01": 2, "pr-014-uc-01": 4}}, {"key": "cg", "name": "コロコロコミック付録デッキ2026 緑", "cards": {"pr-015-c-01": 4, "pr-016-c-01": 4, "pr-017-c-01": 4, "pr-018-uc-01": 4, "pr-019-c-01": 4, "pr-020-c-01": 4, "pr-021-c-01": 4, "pr-022-uc-01": 4, "pr-023-uc-01": 4, "pr-024-c-01": 4, "pr-025-r-01": 4, "pr-026-c-01": 2, "pr-027-uc-01": 4}}];
+const PRODUCTS = [{"key": "sd01", "name": "スタートデッキ レオジン 赤（HB-SD01）", "cards": {"hd01-001-c-01": 3, "hd01-002-c-01": 3, "hd01-003-c-01": 4, "hd01-004-c-01": 4, "hd01-005-c-01": 3, "hd01-006-c-01": 3, "hd01-007-c-01": 4, "hd01-008-c-01": 3, "hd01-009-uc-01": 3, "hd01-010-uc-01": 3, "hd01-011-uc-01": 3, "hd01-012-uc-01": 3, "hd01-013-uc-01": 3, "hd01-014-r-01": 2, "hd01-015-r-01": 2, "hd01-016-r-01": 1, "hd01-017-sr-01": 3}, "dr": {"sr": "hd01-017-sr-01", "dr": "hd01-017-dr-01"}}, {"key": "sd02", "name": "スタートデッキ 不死火 緑（HB-SD02）", "cards": {"hd02-001-c-01": 3, "hd02-002-c-01": 4, "hd02-003-c-01": 3, "hd02-004-c-01": 4, "hd02-005-c-01": 3, "hd02-006-c-01": 4, "hd02-007-c-01": 3, "hd02-008-c-01": 3, "hd02-009-uc-01": 3, "hd02-010-uc-01": 3, "hd02-011-uc-01": 3, "hd02-012-uc-01": 3, "hd02-013-uc-01": 3, "hd02-014-r-01": 1, "hd02-015-r-01": 2, "hd02-016-r-01": 2, "hd02-017-sr-01": 3}, "dr": {"sr": "hd02-017-sr-01", "dr": "hd02-017-dr-01"}}, {"key": "cr", "name": "コロコロコミック付録デッキ2026 赤", "cards": {"pr-002-c-01": 4, "pr-003-c-01": 4, "pr-004-c-01": 4, "pr-005-uc-01": 4, "pr-006-uc-01": 4, "pr-007-c-01": 4, "pr-008-c-01": 4, "pr-009-c-01": 4, "pr-010-uc-01": 4, "pr-011-r-01": 4, "pr-012-c-01": 4, "pr-013-c-01": 2, "pr-014-uc-01": 4}}, {"key": "cg", "name": "コロコロコミック付録デッキ2026 緑", "cards": {"pr-015-c-01": 4, "pr-016-c-01": 4, "pr-017-c-01": 4, "pr-018-uc-01": 4, "pr-019-c-01": 4, "pr-020-c-01": 4, "pr-021-c-01": 4, "pr-022-uc-01": 4, "pr-023-uc-01": 4, "pr-024-c-01": 4, "pr-025-r-01": 4, "pr-026-c-01": 2, "pr-027-uc-01": 4}}];
 $("#cProd").onclick = () => {
   openModal(`<div class="qr prod"><h2>商品をまとめて登録</h2>
     <p class="lead">買った商品を選ぶと、入っているカードを所持カードに足します。同じ商品を2つ買ったときは、2回登録してください。</p>
@@ -1933,5 +1940,9 @@ detectLocal().then(() => setMode("home"));
 <!-- アクセス解析（GoatCounter）。自分のアクセスを除くには URL末尾に #toggle-goatcounter を付けて1回開く -->
 <script data-goatcounter="https://blacklady93.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+<script>
+// アプリ化（PWA）：サービスワーカーを登録
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
 </body>
 </html>
