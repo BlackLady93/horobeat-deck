@@ -91,6 +91,8 @@ window.EFFECT_EN = {
 "●このホロビトはバトル中、ワザやブーストでパワーが上がらない。": "● During Battles, this Horobito's Power can't be increased by Techniques or Boost.",
 "●自分の第1～2ラインにいるホロビトの下にあるカードの合計が3枚以上なら、このホロビトのパワーを+3000し、ダブルダメージを得る。": "● If your Horobito on Line 1–2 have a total of 3 or more cards underneath them, this Horobito gets +3000 Power and gains Double Damage.",
 "●このホロビトがバトルに勝ったとき、カードを1枚引く。": "● When this Horobito wins a Battle, draw 1 card.",
+"●自分の他のファミリーのホロビトがラインに出ているなら、このホロビトのパワーを+2000する。": "● If you have another Family Horobito on your Lines, this Horobito gets +2000 Power.",
+"●このホロビトがバトルに勝ったとき、手札からコスト2以下のファミリーのホロビトを1体、ラインに出してもよい。": "● When this Horobito wins a Battle, you may summon 1 Family Horobito with cost 2 or less from your hand onto a Line.",
 "●共鳴：スザク（このワザを使うホロビトの種族がスザクであるなら、このワザは以下の効果を得る）": "● Resonance: Suzaku (If the Horobito using this Technique is a Suzaku, this Technique gains the following abilities.)",
 "・このワザを使ったとき、相手は手札を1枚選んで捨てる。": "- When you use this Technique, your opponent chooses 1 card from their hand and discards it.",
 "・このバトルに勝ったとき、自分はカードを1枚引く。": "- When you win this Battle, draw 1 card.",
@@ -176,6 +178,7 @@ const SETS_EN = {
   "PRカード【HB-BP01 BOX特典】": "Promo: Booster Pack Vol.1 Box Bonus",
   "大合戦ホロモーションパック 一の巻": "Holomotion Pack Vol.1",
   "ホロビート名人戦 優勝賞": "HOROBEAT Meijin-sen Winner Prize",
+  "「ホロビート」コミックス1巻 付録": "HOROBEAT Comics Vol.1 Bonus",
   "PRカード": "Promo Cards",
 };
 window.setLabel = name => lang === "en" && SETS_EN[name] ? `${name} / ${SETS_EN[name]}` : name;
@@ -198,7 +201,7 @@ const EN = {
   "＋ 新規デッキを作る": "＋ Create a new deck", "対戦記録": "Match log", "複製": "Copy", "削除": "Delete", "削除しました": "Deleted",
   "新しいデッキ": "New deck", "無題": "Untitled", "前回のデッキ": "Previous deck",
   // カード一覧・絞り込み
-  "絞り込み": "Filters", "カード名・能力で検索": "Search by name or ability", "カード名・能力・種族で検索": "Search by name, ability, or tribe",
+  "絞り込み": "Filters", "カード名・能力で検索": "Search by name or ability", "キーワードで検索": "Search by keyword", "カード名・能力・種族で検索": "Search by name, ability, or tribe",
   "色": "Color", "タイプ": "Type", "コスト": "Cost", "レア": "Rarity",
   "収録先：すべて": "Set: all", "種族：すべて": "Tribe: all", "キーワード：すべて": "Keyword: all", "トリガー：すべて": "Trigger: all", "ブースト：すべて": "Boost: all",
   "条件クリア": "Clear filters", "同名カードをまとめる": "Group same-name cards", "4枚未満のカードだけ": "Only cards with fewer than 4",
@@ -219,6 +222,14 @@ const EN = {
   "保存して移動": "Save and leave", "保存せずに移動": "Leave without saving", "編集を続ける": "Keep editing",
   "先にデッキを保存してください": "Save the deck first",
   "変更なし": "No changes", "カードごとに見る": "Show each card",
+  "商品をまとめて登録": "Add a product",
+  "買った商品を選ぶと、入っているカードを所持カードに足します。同じ商品を2つ買ったときは、2回登録してください。": "Choose a product you bought to add all of its cards to your collection. If you bought two, add it twice.",
+  "スタートデッキ レオジン 赤（HB-SD01）": "Starter Deck Leojin Red (HB-SD01)", "スタートデッキ 不死火 緑（HB-SD02）": "Starter Deck Shinazui Green (HB-SD02)",
+  "特別イラスト（DR）の「": "Did you get the special-art (DR) ", "」は入っていましたか？": "?",
+  "入っていない（SR×3）": "No (SR ×3)", "入っていた（SR×2＋DR×1）": "Yes (SR ×2 + DR ×1)", "← 商品を選び直す": "← Choose another product", "登録する": "Add",
+  "50枚になると対戦記録をつけられます": "You can record matches once the deck has exactly 50 cards",
+  "このデッキは50枚ではないので、新しい記録はつけられません。": "This deck doesn't have exactly 50 cards, so you can't add new records.",
+  "デッキなし": "No deck saved", "今と違う": "Changed since", "記録したときのデッキ": "Deck at the time of this record", "← 対戦記録へ": "← Match log",
   "ハートが破壊されたとき、このホロビトをコストなしで新しいラインに出すか、オーバービートで使える": "When this card is destroyed from your Heart Zone, you may summon this Horobito onto a new Line or with Overbeat, without paying its cost.",
   "ハートが破壊されたとき、このホロビトをコストなしでオーバービートで使える": "When this card is destroyed from your Heart Zone, you may summon this Horobito with Overbeat without paying its cost.",
   "ハートが破壊されたとき、このカードを墓地に送って3枚引く": "When this card is destroyed from your Heart Zone, put it into your Trash and draw 3 cards.",
@@ -229,7 +240,10 @@ const EN = {
   "所持 +1": "Owned +1", "所持 −1": "Owned −1", "このイラストで追加": "Add this art", "1枚減らす": "Remove one",
   // 書き出し・読込
   "書き出し / 読込": "Export / Import", "コピー": "Copy", "この内容を読み込む": "Import this", "コピーしました": "Copied", "読み込みました": "Imported",
-  "「枚数 カード名 [カードID]」形式。IDがなければカード名で照合します（同名が複数あるときは通常レアを優先）。": "Format: \"count name [card ID]\". Without an ID, cards are matched by name (regular rarity first when there are several).",
+  "「枚数 カード名 [カードID]」形式。カッコや#の違い、枚数が後ろ（×4・4枚）、カード番号だけ（HB01-002）でも読めます。IDがなければカード名で照合します（同名が複数あるときは通常レアを優先）。": "Format: \"count name [card ID]\". Different brackets or #, the count at the end (×4), or just the card number (HB01-002) also work. Without an ID, cards are matched by name (regular rarity first when there are several).",
+  "名前だけで選んだカード": "Cards picked by name", "カードIDがなかったので、名前から選びました。印のある行は、レア違いや収録先違いもあるカードです。違っていたらデッキで入れ替えてください。": "These lines had no card ID, so the card was picked by name. Marked lines also exist in other rarities or sets — swap them in the deck if needed.",
+  "読み込めなかった行": "Lines not imported", "もう一度押すと終了します": "Press back again to exit",
+  "更新履歴": "Change log", "全部見る": "See all", "← 戻る": "← Back", "詳しく": "Details", "更新履歴は日本語のみです。": "The change log is only in Japanese.", "次の行はカードが見つからなかったので、読み込んでいません。": "No card was found for these lines, so they were skipped.",
   "選択しました。Ctrl+Cでコピーしてください": "Selected. Press Ctrl+C to copy", "選択しました。コピーしてください": "Selected. Copy it manually",
   "所持カード 書き出し / 読込": "Collection Export / Import", "この内容で上書き": "Replace with this",
   // 所持カード
@@ -302,6 +316,9 @@ const P = [
   [/^(\d+)種$/, "$1 kinds"],
   [/^(\d+)枚$/, "$1 cards"],
   [/^(\d+)枚 → (\d+)枚$/, "$1 → $2 cards"],
+  [/^今は×(\d+)$/, "now ×$1"],
+  [/^(\d+)枚を所持カードに登録しました$/, "Added $1 cards to your collection"],
+  [/^(.+) ・ ([勝負分]) ・ (\d+)枚$/, (m, d, r, n) => `${d} · ${{勝:"Win",負:"Loss",分:"Draw"}[r]} · ${n} cards`],
   [/^＋(\d+)枚$/, "+$1 cards"],
   [/^−(\d+)枚$/, "−$1 cards"],
   [/^(\d+)種が変わる$/, "$1 kinds change"],
@@ -315,6 +332,9 @@ const P = [
   [/^✓ 保存済み（(.+)）$/, "✓ Saved ($1)"],
   [/^保存しました（現在(\d+)枚）$/, "Saved ($1 cards)"],
   [/^読み込みました（(\d+)(?:行|件)は認識できませんでした）$/, "Imported ($1 lines not recognized)"],
+  [/^最新 v([\d.]+)$/, "Latest v$1"],
+  [/^v([\d.]+) に更新しました$/, "Updated to v$1"],
+  [/^ほかに (.+) あり$/, m => "Also: " + m.replace(/^ほかに | あり$/g,"").replace(/版/g," print")],
   [/^(\d+)勝(\d+)敗(?:(\d+)分)?$/, (m, w, l, d) => `${w}W ${l}L${d ? ` ${d}D` : ""}`],
   [/^勝率$/, "Win rate"],
   [/^(\d+)戦 ・ 勝率 (.+)$/, "$1 games · win rate $2"],
@@ -332,6 +352,10 @@ const P = [
   [/^(.+)ほか(\d+)件$/, "$1 and $2 more"],
   [/^(\d+):(\d+)以降$/, "from $1:$2"],
   [/^「(.+)」$/, "\"$1\""],
+  [/^収録先：(\d+)件$/, "Set: $1 selected"],
+  [/^種族：(\d+)件$/, "Tribe: $1 selected"],
+  [/^収録先：(.+)$/, (m, x) => "Set: " + tr(x)],
+  [/^種族：(.+)$/, (m, x) => "Tribe: " + tr(x)],
 ];
 const JP = /[぀-ヿ一-鿿]/;
 function tr(s){
